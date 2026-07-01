@@ -110,7 +110,7 @@
                             <th class="p-4 font-semibold text-sm">Item Name</th>
                             <th class="p-4 font-semibold text-sm">Sidestat</th>
                             <th class="p-4 font-semibold text-sm">Type</th>
-                            <th class="p-4 font-semibold text-sm">Available Variants (Value | Price | Seller)</th>
+                            <th class="p-4 font-semibold text-sm">Offer Details (Value | Price | Seller)</th>
                         </tr>
                     </thead>
                     <tbody id="market-table-body" class="divide-y divide-gray-700 text-sm"></tbody>
@@ -279,53 +279,28 @@
             }
         }
 
+        // CHANGED: Complete removal of grouping logic. Every single object maps directly to its own <tr> element.
         function displayMarketListings(listings) {
             const tbody = document.getElementById('market-table-body');
             if(listings.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No items found.</td></tr>`;
                 return;
             }
-            
-            const grouped = {};
-            listings.forEach(item => {
-                if (!item.name) return;
-                
-                // CHANGED: Group by Name + Sidestat combined key so separate stats don't merge rows
-                const groupKey = `${item.name}_${item.sidestat}`;
-                
-                if (!grouped[groupKey]) {
-                    grouped[groupKey] = { 
-                        name: item.name, 
-                        sidestat: item.sidestat, 
-                        slot: item.slot, 
-                        variants: [] 
-                    };
-                }
-                grouped[groupKey].variants.push({
-                    value: item.value || "",
-                    price: item.price,
-                    seller: item.seller
-                });
-            });
 
-            tbody.innerHTML = Object.values(grouped).map(group => `
+            tbody.innerHTML = listings.map(item => `
                 <tr class="hover:bg-gray-700/30 transition-colors border-b border-gray-700/50">
-                    <td class="p-4 font-bold text-white align-top w-1/4">${group.name}</td>
-                    <td class="p-4 text-gray-400 align-top w-1/6">${group.sidestat}</td>
-                    <td class="p-4 align-top w-1/6 text-indigo-300 font-medium">${group.slot || 'N/A'}</td>
-                    <td class="p-2 w-1/2">
-                        <div class="space-y-2 my-2">
-                            ${group.variants.map(v => `
-                                <div class="bg-gray-900/50 border border-gray-700 rounded-lg p-3 flex flex-wrap items-center justify-between gap-2">
-                                    <div class="flex items-center gap-4">
-                                        <span class="text-emerald-400 font-medium">${v.value}</span>
-                                        <span class="text-gray-500">|</span>
-                                        <span class="${v.price === 'SOLD' ? 'text-rose-400 line-through' : 'text-amber-400 font-bold'}">${v.price}</span>
-                                        <span class="text-gray-500 hidden sm:inline">|</span>
-                                        <span class="text-gray-400 font-mono text-xs hidden sm:inline">${v.seller}</span>
-                                    </div>
-                                </div>
-                            `).join('')}
+                    <td class="p-4 font-bold text-white align-middle w-1/4">${item.name}</td>
+                    <td class="p-4 text-gray-400 align-middle w-1/6">${item.sidestat}</td>
+                    <td class="p-4 align-middle w-1/6 text-indigo-300 font-medium">${item.slot || 'N/A'}</td>
+                    <td class="p-2 w-1/2 align-middle">
+                        <div class="bg-gray-900/50 border border-gray-700 rounded-lg p-3 flex flex-wrap items-center justify-between gap-2 my-1">
+                            <div class="flex items-center gap-4">
+                                <span class="text-emerald-400 font-medium">${item.value}</span>
+                                <span class="text-gray-500">|</span>
+                                <span class="${item.price === 'SOLD' ? 'text-rose-400 line-through' : 'text-amber-400 font-bold'}">${item.price}</span>
+                                <span class="text-gray-500 hidden sm:inline">|</span>
+                                <span class="text-gray-400 font-mono text-xs hidden sm:inline">${item.seller}</span>
+                            </div>
                         </div>
                     </td>
                 </tr>
