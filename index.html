@@ -8,10 +8,12 @@
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
 
+    <!-- Header Navigation -->
     <header class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50 shadow-md">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <h1 class="text-2xl font-bold text-indigo-400 uppercase tracking-wider">Pandavvv's 24hr Open Market</h1>
             
+            <!-- PC & Mobile Friendly Inline Password Bar -->
             <div class="flex flex-wrap items-center gap-3">
                 <input type="password" id="access-password" placeholder="Enter Market Key..." class="bg-gray-900 border border-gray-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-indigo-500 w-40 text-white">
                 <button onclick="handlePostAction()" class="px-4 py-1.5 text-sm rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors">+ Post Listing</button>
@@ -20,6 +22,7 @@
         </div>
     </header>
 
+    <!-- IN-SITE POPUP FORM MODAL -->
     <div id="formModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-gray-800 border border-gray-700 rounded-xl w-full max-w-md p-6 shadow-2xl relative">
             <button onclick="toggleModal(false)" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold">&times;</button>
@@ -30,9 +33,20 @@
                     <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Gear Item Name</label>
                     <input type="text" id="form-itemName" required placeholder="e.g. Laser Rifle" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
                 </div>
+                <!-- CHANGED: Turned the Sidestat input into a drop-down menu selection -->
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Sidestat</label>
-                    <input type="text" id="form-sidestat" required placeholder="e.g. Attack, Ability, HP" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                    <select id="form-sidestat" required class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                        <option value="Ability">Ability</option>
+                        <option value="Attack">Attack</option>
+                        <option value="Engine">Engine</option>
+                        <option value="Fire Resistance (RST)">Fire Resistance (RST)</option>
+                        <option value="HP">HP</option>
+                        <option value="Repair">Repair</option>
+                        <option value="Science">Science</option>
+                        <option value="Stamina (STA)">Stamina (STA)</option>
+                        <option value="Weapon">Weapon</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Gear Type (Slot)</label>
@@ -62,6 +76,7 @@
     </div>
 
     <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-8">
+        <!-- PUBLIC MARKETPLACE VIEW -->
         <section id="view-market" class="space-y-6">
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="md:col-span-2">
@@ -108,6 +123,7 @@
             </div>
         </section>
 
+        <!-- SECURE ADMIN DELETION PANEL (HIDDEN BY DEFAULT) -->
         <section id="admin-delete-panel" class="hidden border-t-2 border-dashed border-rose-900/60 pt-6 space-y-6">
             <div class="bg-rose-950/20 border border-rose-800/40 p-4 rounded-xl">
                 <h2 class="text-xl font-bold text-rose-400 mb-2">🛡️ Live Listing Deletion Board</h2>
@@ -187,7 +203,7 @@
 
             const payload = {
                 itemName: document.getElementById('form-itemName').value.trim(),
-                sidestat: document.getElementById('form-sidestat').value.trim(),
+                sidestat: document.getElementById('form-sidestat').value, // Matches drop-down
                 slot: document.getElementById('form-slot').value, 
                 value: document.getElementById('form-value').value.trim(),
                 price: document.getElementById('form-price').value.trim(),
@@ -241,6 +257,7 @@
                     const fetchPromises = activeListingFiles.map(file => 
                         fetch(`${file.download_url}?cb=${Date.now()}`)
                             .then(res => res.json())
+                            // FIXED: Re-mapped the internal file tracking structure to point to components correctly
                             .then(data => ({ ...data, _sha: file.sha, _filename: file.name }))
                     );
                     externalUserListings = await Promise.all(fetchPromises);
@@ -319,9 +336,9 @@
 
             tbody.innerHTML = listings.map(item => `
                 <tr class="hover:bg-gray-800/60 border-b border-gray-700/40">
-                    <td class="p-4 font-semibold text-white">${item.itemName}</td>
-                    <td class="p-4 text-rose-300 font-medium">${item.sidestat} | <span class="text-amber-400">${item.price}</span></td>
-                    <td class="p-4 text-gray-400 font-mono text-xs">${item.seller}</td>
+                    <td class="p-4 font-semibold text-white">${item.itemName || 'N/A'}</td>
+                    <td class="p-4 text-rose-300 font-medium">${item.sidestat || 'N/A'} | <span class="text-amber-400">${item.price || 'N/A'}</span></td>
+                    <td class="p-4 text-gray-400 font-mono text-xs">${item.seller || 'N/A'}</td>
                     <td class="p-4 text-right">
                         <button onclick="requestDeleteListing('${item._filename}', '${item._sha}', this)" class="text-xs px-3 py-1.5 font-bold rounded bg-rose-600/80 hover:bg-rose-500 text-white transition-colors shadow-md">Delete Listing</button>
                     </td>
@@ -330,9 +347,14 @@
         }
 
         async function requestDeleteListing(filename, sha, buttonElement) {
+            if (!filename || filename === "undefined" || !sha) {
+                alert("Error: Internal structural listing metadata index missing.");
+                return;
+            }
             if (!confirm(`Are you sure you want to permanently delete this listing record file (${filename}) from GitHub?`)) return;
             
             buttonElement.disabled = true;
+            buttonElement.innerText = "Purging...";
             const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings/${filename}?cb=${Date.now()}`;
 
             try {
@@ -355,11 +377,13 @@
                     const errData = await response.json();
                     alert("Delete Action Error: " + errData.message);
                     buttonElement.disabled = false;
+                    buttonElement.innerText = "Delete Listing";
                 }
             } catch (err) {
                 alert("Network connectivity error during transaction.");
                 console.error(err);
                 buttonElement.disabled = false;
+                buttonElement.innerText = "Delete Listing";
             }
         }
 
