@@ -21,7 +21,7 @@ body:
     id: sidestat
     attributes:
       label: Sidestat
-      placeholder: "e.g. +2.4 Attack"
+      placeholder: "e.g. +0.6 Attack"
     validations:
       required: true
   - type: input
