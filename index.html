@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PSS Active Market</title>
@@ -48,7 +47,6 @@
                         <input type="text" id="form-itemName" placeholder="e.g. Laser Rifle, Hero Blueprint" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
-                        <!-- SWAPPED IN MODAL: Item Type is now on the left, Sidestat on the right -->
                         <div>
                             <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Item Type (Slot)</label>
                             <select id="form-slot" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
@@ -97,7 +95,6 @@
                 <div id="bulk-fields" class="space-y-4 hidden">
                     <div class="bg-gray-900/60 p-3 rounded border border-gray-700 text-xs text-gray-400 space-y-1">
                         <p class="font-bold text-indigo-400">📋 Format Rules for Bulk Pasting:</p>
-                        <!-- CHANGED: Clarified input formatting description to match structural column swap rules -->
                         <p>Separate values with commas or tabs. One item per line. Do not type your username:</p>
                         <p class="font-mono text-emerald-400 bg-black/40 p-1.5 rounded mt-1">Item Name, Type, Sidestat, Value, Price</p>
                         <p class="text-[10px] text-gray-500 pt-1">Example: Hero Blueprint, Blueprint, None, N/A, 1200 Bux</p>
@@ -120,7 +117,6 @@
                 <div class="md:col-span-2">
                     <input type="text" id="market-search" oninput="filterMarket()" placeholder="Search active shop inventory ledger..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
                 </div>
-                <!-- SWAPPED IN LAYOUT VIEW: Filter filters Type selector first, then Sidestat -->
                 <div>
                     <select id="filter-slot" onchange="filterMarket()" class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
                         <option value="">All Types</option>
@@ -155,7 +151,6 @@
                     <thead>
                         <tr class="bg-gray-700 text-gray-300 border-b border-gray-600">
                             <th class="p-4 font-semibold text-sm">Item Name</th>
-                            <!-- FIXED: Visual columns headers swapped properly -->
                             <th class="p-4 font-semibold text-sm">Type</th>
                             <th class="p-4 font-semibold text-sm">Sidestat</th>
                             <th class="p-4 font-semibold text-sm">Offer Details (Value | Price | Seller)</th>
@@ -199,8 +194,7 @@
         // Key Registry Database Mapping
         const playerKeys = {
             "0302": "Pandavvv",
-            "7777": "Trevor",
-            "2735: "OdeToLlama",
+            "6492": "OdeToLlama", 
             "9999": "BetaTester"
         };
 
@@ -337,11 +331,10 @@
                         failureCount++;
                         continue; 
                     }
-                    // FIXED IN BULK ENGINE: Swapped row index loading variables assignment order
                     batchPayloads.push({
                         itemName: dataParts[0],
-                        slot: dataParts[1],     // Reads Type Second
-                        sidestat: dataParts[2], // Reads Sidestat Third
+                        slot: dataParts[1],     
+                        sidestat: dataParts[2], 
                         value: dataParts[3],
                         price: dataParts[4],
                         seller: loggedInUser, 
@@ -477,7 +470,6 @@
             }
         }
 
-        // FIXED DISPLAY: Outputs layout nodes in Type -> Sidestat format configuration sequences
         function displayMarketListings(listings) {
             const tbody = document.getElementById('market-table-body');
             if(listings.length === 0) {
@@ -488,9 +480,7 @@
             tbody.innerHTML = listings.map(item => `
                 <tr class="hover:bg-gray-700/30 transition-colors border-b border-gray-700/50">
                     <td class="p-4 font-bold text-white align-middle w-1/4">${item.name}</td>
-                    <!-- 1. Type Slot Data Column Element -->
                     <td class="p-4 align-middle w-1/6 text-indigo-300 font-medium">${item.slot || 'N/A'}</td>
-                    <!-- 2. Sidestat Metric Data Column Element -->
                     <td class="p-4 text-gray-400 align-middle w-1/6">${item.sidestat}</td>
                     <td class="p-2 w-1/2 align-middle">
                         <div class="bg-gray-900/50 border border-gray-700 rounded-lg p-3 flex flex-wrap items-center justify-between gap-2 my-1">
