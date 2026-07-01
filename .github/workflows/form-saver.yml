@@ -1,0 +1,33 @@
+name: Save Form Submission To Database
+
+on:
+  repository_dispatch:
+    types: [staticforms_submission]
+
+jobs:
+  create_json:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Write Listing File
+        run: |
+          cat <<EOF > listings/listing-${{ github.event.client_payload.seller }}-${{ github.run_id }}.json
+          {
+            "itemName": "${{ github.event.client_payload.itemName }}",
+            "sidestat": "${{ github.event.client_payload.sidestat }}",
+            "price": "${{ github.event.client_payload.price }}",
+            "priceRange": "${{ github.event.client_payload.priceRange }}",
+            "seller": "${{ github.event.client_payload.seller }}",
+            "datePosted": "2026-07-01"
+          }
+          EOF
+
+      - name: Commit & Push To Main Branch
+        run: |
+          git config --global user.name "Marketplace Bot"
+          git config --global user.email "bot@market.internal"
+          git add listings/*.json
+          git commit -m "Auto-published live listing for ${{ github.event.client_payload.seller }}"
+          git push
