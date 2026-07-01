@@ -8,12 +8,10 @@
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
 
-    <!-- Header Navigation -->
     <header class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50 shadow-md">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <h1 class="text-2xl font-bold text-indigo-400 uppercase tracking-wider">Pandavvv's 24hr Open Market</h1>
             
-            <!-- PC & Mobile Friendly Inline Password Bar -->
             <div class="flex flex-wrap items-center gap-3">
                 <input type="password" id="access-password" placeholder="Enter Market Key..." class="bg-gray-900 border border-gray-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-indigo-500 w-40 text-white">
                 <button onclick="handlePostAction()" class="px-4 py-1.5 text-sm rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors">+ Post Listing</button>
@@ -22,7 +20,6 @@
         </div>
     </header>
 
-    <!-- IN-SITE POPUP FORM MODAL -->
     <div id="formModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-gray-800 border border-gray-700 rounded-xl w-full max-w-md p-6 shadow-2xl relative">
             <button onclick="toggleModal(false)" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold">&times;</button>
@@ -55,7 +52,6 @@
     </div>
 
     <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-8">
-        <!-- PUBLIC MARKETPLACE VIEW -->
         <section id="view-market" class="space-y-6">
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 flex flex-col md:flex-row gap-4">
                 <input type="text" id="market-search" oninput="filterMarket()" placeholder="Search active shop inventory ledger..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
@@ -75,7 +71,6 @@
             </div>
         </section>
 
-        <!-- SECURE ADMIN DELETION PANEL (HIDDEN BY DEFAULT) -->
         <section id="admin-delete-panel" class="hidden border-t-2 border-dashed border-rose-900/60 pt-6 space-y-6">
             <div class="bg-rose-950/20 border border-rose-800/40 p-4 rounded-xl">
                 <h2 class="text-xl font-bold text-rose-400 mb-2">🛡️ Live Listing Deletion Board</h2>
@@ -198,25 +193,25 @@
         }
 
         async function fetchCombinedRegistry() {
-             try {
-        const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings?cb=${Date.now()}`;
-        const response = await fetch(url);
-        const files = await response.json();
-        
-        const activeListingFiles = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json') && f.name !== 'TEMPLATE.json') : [];
-        
-        if (activeListingFiles.length > 0) {
-            const fetchPromises = activeListingFiles.map(file => 
-                fetch(`${file.download_url}?cb=${Date.now()}`)
-                    .then(res => res.json())
-                    .then(data => ({ ...data, _sha: file.sha, _filename: file.name }))
+            try {
+                const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings?cb=${Date.now()}`;
+                const response = await fetch(url);
+                const files = await response.json();
+                
+                const activeListingFiles = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json') && f.name !== 'TEMPLATE.json') : [];
+                
+                if (activeListingFiles.length > 0) {
+                    const fetchPromises = activeListingFiles.map(file => 
+                        fetch(`${file.download_url}?cb=${Date.now()}`)
+                            .then(res => res.json())
+                            .then(data => ({ ...data, _sha: file.sha, _filename: file.name }))
                     );
-            externalUserListings = await Promise.all(fetchPromises);
+                    externalUserListings = await Promise.all(fetchPromises);
                 } else {
-            externalUserListings = [];
+                    externalUserListings = [];
                 }
             } catch (err) {
-        externalUserListings = [];
+                externalUserListings = [];
             }
             
             const combinedData = [...masterGearList, ...externalUserListings.map(item => ({
@@ -303,13 +298,15 @@
             buttonElement.innerText = "Purging...";
             buttonElement.disabled = true;
 
-            const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings/${filename}`;
+            // FIX: Added cache-busting timestamp tag to the delete request path
+            const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings/${filename}?cb=${Date.now()}`;
 
             try {
                 const response = await fetch(url, {
                     method: "DELETE",
                     headers: {
-                        "Authorization": "token " + GITHUB_TOKEN,
+                        // FIX: Capitalized "Token " string format matching official schema requirement
+                        "Authorization": "Token " + GITHUB_TOKEN,
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
