@@ -13,10 +13,41 @@
             <h1 class="text-2xl font-bold text-indigo-400 uppercase tracking-wider">PSS Open Market</h1>
             <div class="flex gap-4">
                 <div class="px-4 py-2 rounded bg-indigo-600 text-white font-medium flex items-center gap-2">🏪 Active Shop Listings</div>
-                <button onclick="checkPasswordAndPost()" class="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors">+ Post a Listing</button>
+                <button onclick="checkPasswordAndOpenModal()" class="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors">+ Post a Listing</button>
             </div>
         </div>
     </header>
+
+    <div id="formModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-800 border border-gray-700 rounded-xl w-full max-w-md p-6 shadow-2xl relative">
+            <button onclick="toggleModal(false)" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold">&times;</button>
+            <h2 class="text-xl font-bold text-indigo-400 mb-4">Create New Market Offer</h2>
+            
+            <form id="submissionForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Gear Item Name</label>
+                    <input type="text" id="form-itemName" required placeholder="e.g. Laser Rifle" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Base Stat</label>
+                    <input type="text" id="form-baseStat" required placeholder="e.g. Weapon, HP, Engine" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Sidestat Roll</label>
+                    <input type="text" id="form-sidestat" required placeholder="e.g. +2.4 Attack" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Price / Cost</label>
+                    <input type="text" id="form-price" required placeholder="e.g. 500 Bux" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">In-Game Captain Name</label>
+                    <input type="text" id="form-seller" required placeholder="Your username" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <button type="submit" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded transition-colors shadow-lg">Publish to Live Board</button>
+            </form>
+        </div>
+    </div>
 
     <main class="max-w-6xl mx-auto p-4 md:p-6">
         <section id="view-market" class="space-y-6">
@@ -33,34 +64,87 @@
                             <th class="p-4 font-semibold text-sm">Available Variants (Sidestat | Price | Seller)</th>
                         </tr>
                     </thead>
-                    <tbody id="market-table-body" class="divide-y divide-gray-700 text-sm">
-                        </tbody>
+                    <tbody id="market-table-body" class="divide-y divide-gray-700 text-sm"></tbody>
                 </table>
             </div>
         </section>
     </main>
 
     <script>
-        // =========================================================================
-        // CONFIGURATION: Set your password and manual inventory here
-        // =========================================================================
-        const MARKET_PASSWORD = "0302"; // CHANGE THIS PASSWORD TO ANYTHING YOU WANT
-        
-        const masterGearList = [
-            
-        ];
-
+        const MARKET_PASSWORD = "0302"; 
         const githubUser = "Pandavvv-market";
         const githubRepo = "Market-place";
+        
+        // PASTE YOUR GENERATED GITHUB PERSONAL TOKEN INSIDE THESE QUOTES:
+        const GITHUB_TOKEN = "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";
+
+        // METHOD 1: YOUR PERSONAL HAND-WRITTEN INVENTORY BACKEND
+        const masterGearList = [
+            { name: "Laser Rifle", slot: "Weapon", baseStat: "Weapon", sideBonus: "+0.5", sideStat: "Attack", price: "400 Bux", seller: "Pandavvv" },
+            { name: "Combat Helmet", slot: "Head", baseStat: "HP", sideBonus: "+0.2", sideStat: "Attack", price: "150 Bux", seller: "Pandavvv" }
+        ];
+
         let externalUserListings = []; 
 
-        function checkPasswordAndPost() {
+        function checkPasswordAndOpenModal() {
             const userInput = prompt("Enter the Secret Seller Password to access the submission form:");
             if (userInput === MARKET_PASSWORD) {
-                // Routes directly to your specific repository template form layout
-                window.open(`https://github.com/${githubUser}/${githubRepo}/issues/new?template=post-item.yml`, '_blank');
+                toggleModal(true);
             } else if (userInput !== null) {
                 alert("Incorrect Password! Access denied.");
+            }
+        }
+
+        function toggleModal(show) {
+            document.getElementById('formModal').classList.toggle('hidden', !show);
+            if(!show) document.getElementById('submissionForm').reset();
+        }
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.innerText = "Uploading to Database...";
+            btn.disabled = true;
+
+            const payload = {
+                itemName: document.getElementById('form-itemName').value.trim(),
+                baseStat: document.getElementById('form-baseStat').value.trim(),
+                sidestat: document.getElementById('form-sidestat').value.trim(),
+                price: document.getElementById('form-price').value.trim(),
+                seller: document.getElementById('form-seller').value.trim(),
+                datePosted: "2026-07-01"
+            };
+
+            const fileName = `shop-${payload.seller.replace(/[^a-zA-Z0-9]/g, '')}-${Date.now()}.json`;
+            const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings/${fileName}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `token ${GITHUB_TOKEN}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: `Add item listing via custom in-site modal`,
+                        content: btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))))
+                    })
+                });
+
+                if (response.ok) {
+                    alert("Listing posted successfully!");
+                    toggleModal(false);
+                    fetchCombinedRegistry();
+                } else {
+                    const errData = await response.json();
+                    alert("Database Error: " + errData.message);
+                }
+            } catch (err) {
+                alert("Network connectivity failure.");
+                console.error(err);
+            } finally {
+                btn.innerText = "Publish to Live Board";
+                btn.disabled = false;
             }
         }
 
@@ -82,7 +166,6 @@
                     externalUserListings = [];
                 }
             } catch (err) {
-                console.warn("API wait limit active or missing folder. Using manual registry.");
                 externalUserListings = [];
             }
             
@@ -152,7 +235,6 @@
             displayMarketListings(filtered);
         }
 
-        // Run dashboard on start
         fetchCombinedRegistry();
     </script>
 </body>
