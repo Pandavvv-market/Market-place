@@ -31,8 +31,8 @@
                     <input type="text" id="form-itemName" required placeholder="e.g. Laser Rifle" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Base Stat</label>
-                    <input type="text" id="form-baseStat" required placeholder="e.g. Weapon, HP, Engine" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Sidestat</label>
+                    <input type="text" id="form-sidestat" required placeholder="e.g. Attack, Ability, HP" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Gear Type (Slot)</label>
@@ -45,8 +45,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Sidestat Roll</label>
-                    <input type="text" id="form-sidestat" required placeholder="e.g. +2.4 Attack" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Value</label>
+                    <input type="text" id="form-value" required placeholder="e.g. +2.4, 40%" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Price / Cost</label>
@@ -68,12 +68,17 @@
                     <input type="text" id="market-search" oninput="filterMarket()" placeholder="Search active shop inventory ledger..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
                 </div>
                 <div>
-                    <select id="filter-baseStat" onchange="filterMarket()" class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
-                        <option value="">All Base Stats</option>
-                        <option value="Weapon">Weapon</option>
-                        <option value="HP">HP</option>
-                        <option value="ATK">Attack / Atk</option>
-                        <option value="Engine">Engine</option>
+                    <select id="filter-sidestat" onchange="filterMarket()" class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
+                        <option value="">All Sidestats</option>
+                        <option value="ability">Ability</option>
+                        <option value="attack">Attack</option>
+                        <option value="engine">Engine</option>
+                        <option value="fire resistance">Fire Resistance (RST)</option>
+                        <option value="hp">HP</option>
+                        <option value="repair">Repair</option>
+                        <option value="science">Science</option>
+                        <option value="stamina">Stamina (STA)</option>
+                        <option value="weapon">Weapon</option>
                     </select>
                 </div>
                 <div>
@@ -93,9 +98,9 @@
                     <thead>
                         <tr class="bg-gray-700 text-gray-300 border-b border-gray-600">
                             <th class="p-4 font-semibold text-sm">Item Name</th>
-                            <th class="p-4 font-semibold text-sm">Base Stat</th>
+                            <th class="p-4 font-semibold text-sm">Sidestat</th>
                             <th class="p-4 font-semibold text-sm">Type</th>
-                            <th class="p-4 font-semibold text-sm">Available Variants (Sidestat | Price | Seller)</th>
+                            <th class="p-4 font-semibold text-sm">Available Variants (Value | Price | Seller)</th>
                         </tr>
                     </thead>
                     <tbody id="market-table-body" class="divide-y divide-gray-700 text-sm"></tbody>
@@ -140,8 +145,8 @@
         const GITHUB_TOKEN = tokenPart1 + tokenPart2;
 
         const masterGearList = [
-            { name: "Laser Rifle", slot: "Weapon", baseStat: "Weapon", sideBonus: "+0.5", sideStat: "Attack", price: "400 Bux", seller: "Pandavvv" },
-            { name: "Combat Helmet", slot: "Head", baseStat: "HP", sideBonus: "+0.2", sideStat: "Attack", price: "150 Bux", seller: "Pandavvv" }
+            { name: "Laser Rifle", slot: "Weapon", sidestat: "Attack", value: "+0.5", price: "400 Bux", seller: "Pandavvv" },
+            { name: "Combat Helmet", slot: "Head", sidestat: "Attack", value: "+0.2", price: "150 Bux", seller: "Pandavvv" }
         ];
 
         let externalUserListings = []; 
@@ -182,9 +187,9 @@
 
             const payload = {
                 itemName: document.getElementById('form-itemName').value.trim(),
-                baseStat: document.getElementById('form-baseStat').value.trim(),
-                slot: document.getElementById('form-slot').value, 
                 sidestat: document.getElementById('form-sidestat').value.trim(),
+                slot: document.getElementById('form-slot').value, 
+                value: document.getElementById('form-value').value.trim(),
                 price: document.getElementById('form-price').value.trim(),
                 seller: document.getElementById('form-seller').value.trim(),
                 datePosted: "2026-07-01"
@@ -248,10 +253,9 @@
             
             const combinedData = [...masterGearList, ...externalUserListings.map(item => ({
                 name: item.itemName,
-                baseStat: item.baseStat || "N/A",
+                sidestat: item.sidestat || "N/A",
                 slot: item.slot || "Unknown", 
-                sideBonus: "", 
-                sideStat: item.sidestat,
+                value: item.value || "",
                 price: item.price,
                 seller: item.seller
             }))];
@@ -273,11 +277,10 @@
             listings.forEach(item => {
                 if (!item.name) return;
                 if (!grouped[item.name]) {
-                    grouped[item.name] = { name: item.name, baseStat: item.baseStat, slot: item.slot, variants: [] };
+                    grouped[item.name] = { name: item.name, sidestat: item.sidestat, slot: item.slot, variants: [] };
                 }
                 grouped[item.name].variants.push({
-                    sideBonus: item.sideBonus || "",
-                    sideStat: item.sideStat || "",
+                    value: item.value || "",
                     price: item.price,
                     seller: item.seller
                 });
@@ -286,14 +289,14 @@
             tbody.innerHTML = Object.values(grouped).map(group => `
                 <tr class="hover:bg-gray-700/30 transition-colors border-b border-gray-700/50">
                     <td class="p-4 font-bold text-white align-top w-1/4">${group.name}</td>
-                    <td class="p-4 text-gray-400 align-top w-1/6">${group.baseStat}</td>
+                    <td class="p-4 text-gray-400 align-top w-1/6">${group.sidestat}</td>
                     <td class="p-4 align-top w-1/6 text-indigo-300 font-medium">${group.slot || 'N/A'}</td>
                     <td class="p-2 w-1/2">
                         <div class="space-y-2 my-2">
                             ${group.variants.map(v => `
                                 <div class="bg-gray-900/50 border border-gray-700 rounded-lg p-3 flex flex-wrap items-center justify-between gap-2">
                                     <div class="flex items-center gap-4">
-                                        <span class="text-emerald-400 font-medium">${v.sideBonus} ${v.sideStat}</span>
+                                        <span class="text-emerald-400 font-medium">${v.value}</span>
                                         <span class="text-gray-500">|</span>
                                         <span class="${v.price === 'SOLD' ? 'text-rose-400 line-through' : 'text-amber-400 font-bold'}">${v.price}</span>
                                         <span class="text-gray-500 hidden sm:inline">|</span>
@@ -329,9 +332,7 @@
         async function requestDeleteListing(filename, sha, buttonElement) {
             if (!confirm(`Are you sure you want to permanently delete this listing record file (${filename}) from GitHub?`)) return;
             
-            buttonElement.innerText = "Purging...";
             buttonElement.disabled = true;
-
             const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings/${filename}?cb=${Date.now()}`;
 
             try {
@@ -353,49 +354,53 @@
                 } else {
                     const errData = await response.json();
                     alert("Delete Action Error: " + errData.message);
-                    buttonElement.innerText = "Delete Listing";
                     buttonElement.disabled = false;
                 }
             } catch (err) {
                 alert("Network connectivity error during transaction.");
                 console.error(err);
-                buttonElement.innerText = "Delete Listing";
                 buttonElement.disabled = false;
             }
         }
 
-        // UPDATED: Combined filter function evaluating text fields + dropdown selection metrics simultaneously
         function filterMarket() {
             const searchQuery = document.getElementById('market-search').value.toLowerCase();
-            const baseStatFilter = document.getElementById('filter-baseStat').value.toLowerCase();
+            const sidestatFilter = document.getElementById('filter-sidestat').value.toLowerCase();
             const typeFilter = document.getElementById('filter-slot').value.toLowerCase();
 
             const combined = [...masterGearList, ...externalUserListings.map(item => ({
                 name: item.itemName, 
-                baseStat: item.baseStat || "N/A", 
+                sidestat: item.sidestat || "N/A", 
                 slot: item.slot || "Unknown", 
-                sideBonus: "", 
-                sideStat: item.sidestat, 
+                value: item.value || "", 
                 price: item.price, 
                 seller: item.seller
             }))];
 
             const filtered = combined.filter(item => {
-                // 1. Text Search matching
                 const matchesSearch = !searchQuery || 
                     (item.name && item.name.toLowerCase().includes(searchQuery)) || 
-                    (item.sideStat && item.sideStat.toLowerCase().includes(searchQuery)) ||
+                    (item.value && item.value.toLowerCase().includes(searchQuery)) ||
                     (item.seller && item.seller.toLowerCase().includes(searchQuery));
 
-                // 2. Base Stat dropdown matching
-                const matchesBaseStat = !baseStatFilter || 
-                    (item.baseStat && item.baseStat.toLowerCase().includes(baseStatFilter));
+                let matchesSidestat = true;
+                if (sidestatFilter) {
+                    const cleanItemStat = item.sidestat.toLowerCase();
+                    if (sidestatFilter === "fire resistance") {
+                        matchesSidestat = cleanItemStat.includes("fire") || cleanItemStat.includes("rst");
+                    } else if (sidestatFilter === "stamina") {
+                        matchesSidestat = cleanItemStat.includes("stamina") || cleanItemStat.includes("sta");
+                    } else if (sidestatFilter === "attack") {
+                        matchesSidestat = cleanItemStat.includes("attack") || cleanItemStat.includes("atk");
+                    } else {
+                        matchesSidestat = cleanItemStat.includes(sidestatFilter);
+                    }
+                }
 
-                // 3. Type dropdown matching
                 const matchesType = !typeFilter || 
                     (item.slot && item.slot.toLowerCase() === typeFilter);
 
-                return matchesSearch && matchesBaseStat && matchesType;
+                return matchesSearch && matchesSidestat && matchesType;
             });
 
             displayMarketListings(filtered);
