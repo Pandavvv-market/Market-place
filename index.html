@@ -8,83 +8,127 @@
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
 
+    <!-- Header Navigation -->
     <header class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50 shadow-md">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <h1 class="text-2xl font-bold text-indigo-400 uppercase tracking-wider">Pandavvv's 24hr Open Market</h1>
             
+            <!-- Player Key Login Row -->
             <div class="flex flex-wrap items-center gap-3">
-                <input type="password" id="access-password" placeholder="Enter Market Key..." class="bg-gray-900 border border-gray-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-indigo-500 w-40 text-white">
+                <input type="password" id="access-password" placeholder="Enter Your Key..." class="bg-gray-900 border border-gray-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-indigo-500 w-40 text-white">
                 <button onclick="handlePostAction()" class="px-4 py-1.5 text-sm rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors">+ Post Listing</button>
-                <button onclick="handleDeleteAction()" class="px-4 py-1.5 text-sm rounded bg-rose-600 hover:bg-rose-500 text-white font-bold transition-colors">🗑️ Deletions</button>
+                <button onclick="handleDeleteAction()" class="px-4 py-1.5 text-sm rounded bg-rose-600 hover:bg-rose-500 text-white font-bold transition-colors">🗑️ My Listings / Deletions</button>
             </div>
         </div>
     </header>
 
+    <!-- IN-SITE POPUP FORM MODAL -->
     <div id="formModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-gray-800 border border-gray-700 rounded-xl w-full max-w-md p-6 shadow-2xl relative">
+        <div class="bg-gray-800 border border-gray-700 rounded-xl w-full max-w-xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button onclick="toggleModal(false)" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold">&times;</button>
-            <h2 class="text-xl font-bold text-indigo-400 mb-4">Create New Market Offer</h2>
             
+            <div class="flex items-center justify-between border-b border-gray-700 pb-3 mb-4">
+                <div class="flex flex-col">
+                    <h2 class="text-xl font-bold text-indigo-400">Create Market Offers</h2>
+                    <p id="active-user-badge" class="text-xs text-emerald-400 font-mono mt-0.5">Posting as: Guest</p>
+                </div>
+                <!-- Mode Toggle Switches -->
+                <div class="flex bg-gray-900 p-1 rounded border border-gray-700 text-xs font-bold">
+                    <button onclick="setFormMode('single')" id="mode-single-btn" class="px-3 py-1 rounded bg-indigo-600 text-white transition-colors">Single Item</button>
+                    <button onclick="setFormMode('bulk')" id="mode-bulk-btn" class="px-3 py-1 rounded text-gray-400 hover:text-white transition-colors">⚡ Bulk Paste</button>
+                </div>
+            </div>
+            
+            <!-- SINGLE ITEM INPUT CONTAINER -->
             <form id="submissionForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Gear Item Name</label>
-                    <input type="text" id="form-itemName" required placeholder="e.g. Laser Rifle" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                <div id="single-fields" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Gear/Item Name</label>
+                        <input type="text" id="form-itemName" placeholder="e.g. Laser Rifle, Hero Blueprint" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Sidestat</label>
+                            <select id="form-sidestat" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                                <!-- UPDATED: Added None to submodal dropdown menu -->
+                                <option value="None">None</option>
+                                <option value="Ability">Ability</option>
+                                <option value="Attack">Attack</option>
+                                <option value="Engine">Engine</option>
+                                <option value="Fire Resistance (RST)">Fire Resistance (RST)</option>
+                                <option value="HP">HP</option>
+                                <option value="Pilot">Pilot</option>
+                                <option value="Repair">Repair</option>
+                                <option value="Science">Science</option>
+                                <option value="Stamina (STA)">Stamina (STA)</option>
+                                <option value="Weapon">Weapon</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Item Type (Slot)</label>
+                            <select id="form-slot" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                                <option value="Weapon">Weapon</option>
+                                <option value="Head">Head</option>
+                                <option value="Body">Body</option>
+                                <option value="Leg">Leg</option>
+                                <option value="Accessory">Accessory</option>
+                                <option value="Blueprint">Blueprint</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Value</label>
+                            <input type="text" id="form-value" placeholder="e.g. +2.4, 40%, N/A" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Price / Cost</label>
+                            <input type="text" id="form-price" placeholder="e.g. 500 Bux" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">In-Game Captain Name</label>
+                        <input type="text" id="form-seller" disabled class="w-full bg-gray-800 border border-gray-700 text-gray-400 rounded p-2 focus:outline-none cursor-not-allowed font-mono">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Sidestat</label>
-                    <select id="form-sidestat" required class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
-                        <option value="Ability">Ability</option>
-                        <option value="Attack">Attack</option>
-                        <option value="Engine">Engine</option>
-                        <option value="Fire Resistance (RST)">Fire Resistance (RST)</option>
-                        <option value="HP">HP</option>
-                        <option value="Repair">Repair</option>
-                        <option value="Science">Science</option>
-                        <option value="Stamina (STA)">Stamina (STA)</option>
-                        <option value="Weapon">Weapon</option>
-                    </select>
+
+                <!-- BULK PASTING INTERFACE CONTAINER -->
+                <div id="bulk-fields" class="space-y-4 hidden">
+                    <div class="bg-gray-900/60 p-3 rounded border border-gray-700 text-xs text-gray-400 space-y-1">
+                        <p class="font-bold text-indigo-400">📋 Format Rules for Bulk Pasting:</p>
+                        <p>Separate values with commas or tabs. One item per line. Do not type your username:</p>
+                        <p class="font-mono text-emerald-400 bg-black/40 p-1.5 rounded mt-1">Item Name, Sidestat, Type, Value, Price</p>
+                        <p class="text-[10px] text-gray-500 pt-1">Example: Hero Blueprint, None, Blueprint, N/A, 1200 Bux</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Bulk Data Sheet Dump</label>
+                        <textarea id="form-bulkText" rows="6" placeholder="Paste spreadsheet rows or raw lines here..." class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white font-mono focus:outline-none focus:border-indigo-500"></textarea>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Gear Type (Slot)</label>
-                    <select id="form-slot" required class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
-                        <option value="Weapon">Weapon</option>
-                        <option value="Head">Head</option>
-                        <option value="Body">Body</option>
-                        <option value="Leg">Leg</option>
-                        <option value="Accessory">Accessory</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Value</label>
-                    <input type="text" id="form-value" required placeholder="e.g. +2.4, 40%" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Price / Cost</label>
-                    <input type="text" id="form-price" required placeholder="e.g. 500 Bux" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">In-Game Captain Name</label>
-                    <input type="text" id="form-seller" required placeholder="Your username" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
-                </div>
+
                 <button type="submit" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded transition-colors shadow-lg">Publish to Live Board</button>
             </form>
         </div>
     </div>
 
     <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-8">
+        <!-- PUBLIC MARKETPLACE VIEW -->
         <section id="view-market" class="space-y-6">
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="md:col-span-2">
                     <input type="text" id="market-search" oninput="filterMarket()" placeholder="Search active shop inventory ledger..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
                 </div>
                 <div>
+                    <!-- UPDATED: Added None option into the main layout filter tags list -->
                     <select id="filter-sidestat" onchange="filterMarket()" class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
                         <option value="">All Sidestats</option>
+                        <option value="none">None</option>
                         <option value="ability">Ability</option>
                         <option value="attack">Attack</option>
                         <option value="engine">Engine</option>
                         <option value="fire resistance">Fire Resistance (RST)</option>
                         <option value="hp">HP</option>
+                        <option value="pilot">Pilot</option>
                         <option value="repair">Repair</option>
                         <option value="science">Science</option>
                         <option value="stamina">Stamina (STA)</option>
@@ -99,6 +143,7 @@
                         <option value="Body">Body</option>
                         <option value="Leg">Leg</option>
                         <option value="Accessory">Accessory</option>
+                        <option value="Blueprint">Blueprint</option>
                     </select>
                 </div>
             </div>
@@ -118,14 +163,15 @@
             </div>
         </section>
 
+        <!-- SECURE ADMIN DELETION PANEL -->
         <section id="admin-delete-panel" class="hidden border-t-2 border-dashed border-rose-900/60 pt-6 space-y-6">
             <div class="bg-rose-950/20 border border-rose-800/40 p-4 rounded-xl">
-                <h2 class="text-xl font-bold text-rose-400 mb-2">🛡️ Live Listing Deletion Board</h2>
-                <p class="text-xs text-gray-400">Search and permanently delete crowd-submitted JSON records directly from your storage directories.</p>
+                <h2 id="delete-panel-title" class="text-xl font-bold text-rose-400 mb-2">🛡️ My Active Listing Inventory</h2>
+                <p id="delete-panel-desc" class="text-xs text-gray-400">Search and permanently delete item listings associated with your captain ledger profile tracking directories.</p>
             </div>
             
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
-                <input type="text" id="delete-search" oninput="filterDeleteList()" placeholder="Search item or captain to delete..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-rose-500 text-white">
+                <input type="text" id="delete-search" oninput="filterDeleteList()" placeholder="Search item to request delete..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-rose-500 text-white">
             </div>
 
             <div class="overflow-x-auto bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
@@ -145,7 +191,16 @@
     </main>
 
     <script>
-        const MARKET_PASSWORD = "0302"; 
+        const ADMIN_KEY = "0302"; 
+        
+        // Key Registry Database Mapping
+        const playerKeys = {
+            "0302": "Pandavvv",
+            "7777": "Trevor",
+            "1234": "AlphaCaptain",
+            "9999": "BetaTester"
+        };
+
         const githubUser = "Pandavvv-market";
         const githubRepo = "Market-place";
         
@@ -158,53 +213,159 @@
         ];
 
         let externalUserListings = []; 
+        let currentFormMode = 'single';
+        let loggedInUser = ""; 
 
         function verifyPassword() {
             const val = document.getElementById('access-password').value.trim();
-            if (val === MARKET_PASSWORD) {
+            if (playerKeys[val]) {
+                loggedInUser = playerKeys[val];
                 return true;
             }
-            alert("Incorrect Password input! Access denied.");
+            alert("Unauthorized Key Module! Access denied.");
             return false;
         }
 
         function handlePostAction() {
             if (verifyPassword()) {
+                document.getElementById('active-user-badge').innerText = `Posting as: ${loggedInUser}`;
+                document.getElementById('form-seller').value = loggedInUser; 
                 toggleModal(true);
             }
         }
 
         function handleDeleteAction() {
             if (verifyPassword()) {
+                const key = document.getElementById('access-password').value.trim();
+                const title = document.getElementById('delete-panel-title');
+                const desc = document.getElementById('delete-panel-desc');
+
+                if (key === ADMIN_KEY) {
+                    title.innerText = "🛡️ Live Listing Deletion Board (Master Admin Mode)";
+                    desc.innerText = "Full structural access active. You can review and delete any listing entry.";
+                } else {
+                    title.innerText = `🛡️ Active Listing Inventory for Captain: ${loggedInUser}`;
+                    desc.innerText = "You can permanently delete your own listing files, but cannot touch other players'.";
+                }
+
                 document.getElementById('admin-delete-panel').classList.remove('hidden');
                 renderDeleteTable(externalUserListings);
                 document.getElementById('admin-delete-panel').scrollIntoView({ behavior: 'smooth' });
             }
         }
 
+        function setFormMode(mode) {
+            currentFormMode = mode;
+            const singleBtn = document.getElementById('mode-single-btn');
+            const bulkBtn = document.getElementById('mode-bulk-btn');
+            const singleFields = document.getElementById('single-fields');
+            const bulkFields = document.getElementById('bulk-fields');
+
+            if (mode === 'single') {
+                singleBtn.className = "px-3 py-1 rounded bg-indigo-600 text-white transition-colors";
+                bulkBtn.className = "px-3 py-1 rounded text-gray-400 hover:text-white transition-colors";
+                singleFields.classList.remove('hidden');
+                bulkFields.classList.add('hidden');
+                document.getElementById('form-itemName').required = true;
+                document.getElementById('form-value').required = true;
+                document.getElementById('form-price').required = true;
+                document.getElementById('form-bulkText').required = false;
+            } else {
+                bulkBtn.className = "px-3 py-1 rounded bg-indigo-600 text-white transition-colors";
+                singleBtn.className = "px-3 py-1 rounded text-gray-400 hover:text-white transition-colors";
+                singleFields.classList.add('hidden');
+                bulkFields.classList.remove('hidden');
+                document.getElementById('form-itemName').required = false;
+                document.getElementById('form-value').required = false;
+                document.getElementById('form-price').required = false;
+                document.getElementById('form-bulkText').required = true;
+            }
+        }
+
         function toggleModal(show) {
             document.getElementById('formModal').classList.toggle('hidden', !show);
-            if(!show) document.getElementById('submissionForm').reset();
+            if(!show) {
+                document.getElementById('submissionForm').reset();
+                setFormMode('single');
+            }
         }
 
         async function handleFormSubmit(event) {
             event.preventDefault();
             const btn = document.getElementById('submitBtn');
-            btn.innerText = "Uploading to Database...";
             btn.disabled = true;
 
-            const payload = {
-                itemName: document.getElementById('form-itemName').value.trim(),
-                sidestat: document.getElementById('form-sidestat').value, 
-                slot: document.getElementById('form-slot').value, 
-                value: document.getElementById('form-value').value.trim(),
-                price: document.getElementById('form-price').value.trim(),
-                seller: document.getElementById('form-seller').value.trim(),
-                datePosted: "2026-07-01"
-            };
+            if (currentFormMode === 'single') {
+                btn.innerText = "Uploading to Database...";
+                const payload = {
+                    itemName: document.getElementById('form-itemName').value.trim(),
+                    sidestat: document.getElementById('form-sidestat').value, 
+                    slot: document.getElementById('form-slot').value, 
+                    value: document.getElementById('form-value').value.trim(),
+                    price: document.getElementById('form-price').value.trim(),
+                    seller: loggedInUser, 
+                    datePosted: "2026-07-01"
+                };
+                const success = await uploadSingleListing(payload);
+                if (success) {
+                    alert("Listing posted successfully!");
+                    toggleModal(false);
+                    fetchCombinedRegistry();
+                }
+                btn.disabled = false;
+                btn.innerText = "Publish to Live Board";
+            } else {
+                const text = document.getElementById('form-bulkText').value.trim();
+                const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                
+                if(lines.length === 0) {
+                    alert("Please input data lines to parse.");
+                    btn.disabled = false;
+                    return;
+                }
 
-            const fileName = `shop-${payload.seller.replace(/[^a-zA-Z0-9]/g, '')}-${Date.now()}.json`;
-            const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings/${fileName}?cb=${Date.now()}`;
+                let processedCount = 0;
+                let failureCount = 0;
+
+                for (let i = 0; i < lines.length; i++) {
+                    btn.innerText = `Processing Line ${i + 1}/${lines.length}...`;
+                    
+                    const dataParts = lines[i].split(/,|\t/).map(p => p.trim());
+                    
+                    if (dataParts.length < 5) { 
+                        failureCount++;
+                        continue; 
+                    }
+
+                    const payload = {
+                        itemName: dataParts[0],
+                        sidestat: dataParts[1],
+                        slot: dataParts[2],
+                        value: dataParts[3],
+                        price: dataParts[4],
+                        seller: loggedInUser, 
+                        datePosted: "2026-07-01"
+                    };
+
+                    const success = await uploadSingleListing(payload);
+                    if (success) processedCount++;
+                    else failureCount++;
+                    
+                    await new Promise(r => setTimeout(r, 150));
+                }
+
+                alert(`Bulk operation completed!\nSuccessfully uploaded: ${processedCount} records.\nFailed/Skipped lines: ${failureCount}`);
+                toggleModal(false);
+                fetchCombinedRegistry();
+                btn.disabled = false;
+                btn.innerText = "Publish to Live Board";
+            }
+        }
+
+        async function uploadSingleListing(payload) {
+            const timestampUnique = Date.now() + Math.floor(Math.random() * 1000);
+            const fileName = `shop-${payload.seller.replace(/[^a-zA-Z0-9]/g, '')}-${timestampUnique}.json`;
+            const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings/${fileName}`;
 
             try {
                 const response = await fetch(url, {
@@ -214,26 +375,14 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        message: `Add item listing via custom in-site modal`,
+                        message: `Add automated row entry via custom multi-bulk workflow`,
                         content: btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))))
                     })
                 });
-
-                if (response.ok) {
-                    alert("Listing posted successfully!");
-                    toggleModal(false);
-                    fetchCombinedRegistry();
-                    document.getElementById('access-password').value = "";
-                } else {
-                    const errData = await response.json();
-                    alert("Database Error: " + errData.message);
-                }
+                return response.ok;
             } catch (err) {
-                alert("Network connectivity failure.");
-                console.error(err);
-            } finally {
-                btn.innerText = "Publish to Live Board";
-                btn.disabled = false;
+                console.error("Bulk upload line failure context:", err);
+                return false;
             }
         }
 
@@ -306,12 +455,19 @@
 
         function renderDeleteTable(listings) {
             const tbody = document.getElementById('delete-table-body');
-            if (listings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No external database records found.</td></tr>`;
+            const key = document.getElementById('access-password').value.trim();
+
+            let targetedListings = listings;
+            if (key !== ADMIN_KEY) {
+                targetedListings = listings.filter(item => item.seller === loggedInUser);
+            }
+
+            if (targetedListings.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No external records found for your profile identity.</td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = listings.map(item => {
+            tbody.innerHTML = targetedListings.map(item => {
                 const name = item.itemName || item.name || "Unknown Item";
                 const stat = item.sidestat || item.baseStat || "N/A";
                 const value = item.value || item.sidestatRoll || "";
@@ -389,7 +545,6 @@
             }))];
 
             const filtered = combined.filter(item => {
-                // FIXED TYPO HERE: item.seller loop points safely to searchQuery now
                 const matchesSearch = !searchQuery || 
                     (item.name && item.name.toLowerCase().includes(searchQuery)) || 
                     (item.value && item.value.toLowerCase().includes(searchQuery)) ||
@@ -420,7 +575,14 @@
 
         function filterDeleteList() {
             const query = document.getElementById('delete-search').value.toLowerCase();
-            const filtered = externalUserListings.filter(item => 
+            const key = document.getElementById('access-password').value.trim();
+
+            let targetList = externalUserListings;
+            if (key !== ADMIN_KEY) {
+                targetList = externalUserListings.filter(item => item.seller === loggedInUser);
+            }
+
+            const filtered = targetList.filter(item => 
                 (item.itemName && item.itemName.toLowerCase().includes(query)) || 
                 (item.seller && item.seller.toLowerCase().includes(query))
             );
