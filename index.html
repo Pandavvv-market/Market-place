@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pixel Starships Git-Market</title>
+    <title>Pixel Starships Gear Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
@@ -15,7 +15,8 @@
             <div class="flex gap-4">
                 <button onclick="switchTab('wiki')" id="btn-wiki" class="px-4 py-2 rounded bg-indigo-600 text-white font-medium">🛡️ Gear Lookup</button>
                 <button onclick="switchTab('market')" id="btn-market" class="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium">🏪 Player Market</button>
-                <a href="https://github.com/Pandavvv-market/Market-place/new/main/listings" target="_blank" class="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold">+ Post a Listing</a>
+                <!-- Trigger Local Mobile Form PopUp Modal -->
+                <button onclick="toggleModal(true)" class="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold">+ Post a Listing</button>
             </div>
         </div>
     </header>
@@ -25,8 +26,9 @@
         <!-- WIKI VIEW -->
         <section id="view-wiki" class="space-y-6">
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 flex flex-col md:flex-row gap-4">
-                <input type="text" id="wiki-search" oninput="filterGear()" placeholder="Search core gear stats..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
-                <select id="wiki-slot" onchange="filterGear()" class="bg-gray-900 border border-gray-600 rounded px-4 py-2 focus:outline-none focus:border-indigo-500 text-white">
+                <input type="text" id="wiki-search" oninput="filterGear()" placeholder="Search gear name..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
+                <input type="text" id="wiki-stat-search" oninput="filterGear()" placeholder="Search by sidestat value..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
+                <select id="wiki-slot" onchange="filterGear()" class="bg-gray-900 border border-gray-600 rounded px-4 py-2 min-w-[150px] focus:outline-none focus:border-indigo-500 text-white">
                     <option value="">All Slots</option>
                     <option value="Weapon">Weapon</option>
                     <option value="Head">Head</option>
@@ -35,17 +37,13 @@
                     <option value="Accessory">Accessory</option>
                 </select>
             </div>
-            
-            <div id="gear-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Wiki Cards -->
-            </div>
+            <div id="gear-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </section>
 
         <!-- MARKETPLACE VIEW -->
         <section id="view-market" class="hidden space-y-6">
-            <!-- Big Search & Multi-Filter Bar -->
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 flex flex-col md:flex-row gap-4">
-                <input type="text" id="market-search" oninput="filterMarket()" placeholder="Search active player listings (e.g. Laser, Cosmo)..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
+                <input type="text" id="market-search" oninput="filterMarket()" placeholder="Search active listings..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
                 <select id="market-range-filter" onchange="filterMarket()" class="bg-gray-900 border border-gray-600 rounded px-4 py-2 focus:outline-none focus:border-indigo-500 text-white">
                     <option value="">All Price Ranges</option>
                     <option value="Low">Low</option>
@@ -53,7 +51,6 @@
                     <option value="High">High</option>
                 </select>
             </div>
-
             <div class="overflow-x-auto bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -67,27 +64,67 @@
                             <th class="p-4 font-semibold text-sm">Action</th>
                         </tr>
                     </thead>
-                    <tbody id="market-table-body" class="divide-y divide-gray-700 text-sm">
-                        <!-- Marketplace rows render here -->
-                    </tbody>
+                    <tbody id="market-table-body" class="divide-y divide-gray-700 text-sm"></tbody>
                 </table>
             </div>
         </section>
     </main>
 
+    <!-- MOBILE-FRIENDLY POPUP SUBMISSION MODAL -->
+    <div id="sell-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
+        <div class="bg-gray-800 border border-gray-700 p-6 rounded-xl max-w-md w-full space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                <h3 class="text-lg font-bold text-emerald-400">Post Listing (No Code Required)</h3>
+                <button onclick="toggleModal(false)" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            
+            <!-- Standard form inputs work perfectly on mobile browsers -->
+            <form action="https://api.staticforms.xyz/submit" method="post" class="space-y-3">
+                <!-- Replace with your unique StaticForms Access Key -->
+                <input type="hidden" name="accessKey" value="YOUR_STATICFORMS_ACCESS_KEY_HERE">
+                <input type="hidden" name="redirectTo" value="https://pandavvv-market.github.io/Market-place/">
+                
+                <div>
+                    <label class="block text-xs text-gray-400 font-bold uppercase mb-1">Select Gear Item</label>
+                    <select name="$itemName" id="form-item-name" required class="w-full bg-gray-900 border border-gray-600 rounded p-2.5 text-white"></select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 font-bold uppercase mb-1">Sidestat Modification</label>
+                    <input type="text" name="$sidestat" placeholder="e.g. +2.4 Attack" required class="w-full bg-gray-900 border border-gray-600 rounded p-2.5 text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 font-bold uppercase mb-1">Price / Offer</label>
+                    <input type="text" name="$price" placeholder="e.g. 500 Bux" required class="w-full bg-gray-900 border border-gray-600 rounded p-2.5 text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 font-bold uppercase mb-1">Price Range</label>
+                    <select name="$priceRange" required class="w-full bg-gray-900 border border-gray-600 rounded p-2.5 text-white">
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 font-bold uppercase mb-1">Your Discord Username</label>
+                    <input type="text" name="$seller" placeholder="username#0000" required class="w-full bg-gray-900 border border-gray-600 rounded p-2.5 text-white">
+                </div>
+                
+                <button type="submit" class="w-full mt-2 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow-lg">Submit Shop Listing</button>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // Core Wiki Database List (Add more items into this array down the line)
         const masterGearList = [
-            { name: "Laser Rifle", slot: "Weapon", rarity: "Unique", bonus: "+0.5", stat: "Attack" },
-            { name: "Combat Helmet", slot: "Head", rarity: "Common", bonus: "+0.2", stat: "Attack" },
-            { name: "80's Sunnies", slot: "Accessory", rarity: "Common", bonus: "+2.0", stat: "Pilot" }
+            { name: "Laser Rifle", slot: "Weapon", baseStat: "Weapon", sideBonus: "+0.5", sideStat: "Attack" },
+            { name: "Combat Helmet", slot: "Head", baseStat: "HP", sideBonus: "+0.2", sideStat: "Attack" },
+            { name: "80's Sunnies", slot: "Accessory", baseStat: "Engine", sideBonus: "+2.0", sideStat: "Pilot" },
+            { name: "Titan Armor", slot: "Body", baseStat: "HP", sideBonus: "+3.0", sideStat: "Repair" }
         ];
 
-        // Integrated parameters based on your GitHub architecture
         const githubUser = "Pandavvv-market";
         const githubRepo = "Market-place";
-        
-        let liveMarketData = []; // Holds consolidated listings parsed from GitHub
+        let liveMarketData = [];
 
         function switchTab(tab) {
             document.getElementById('view-wiki').classList.toggle('hidden', tab !== 'wiki');
@@ -97,42 +134,44 @@
             if (tab === 'market' && liveMarketData.length === 0) fetchGitMarketplace();
         }
 
+        function toggleModal(show) {
+            document.getElementById('sell-modal').classList.toggle('hidden', !show);
+        }
+
+        function populateFormDropdown() {
+            const select = document.getElementById('form-item-name');
+            const sortedGear = [...masterGearList].sort((a,b) => a.name.localeCompare(b.name));
+            select.innerHTML = sortedGear.map(g => `<option value="${g.name}">${g.name}</option>`).join('');
+        }
+
         async function fetchGitMarketplace() {
             const tbody = document.getElementById('market-table-body');
-            tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400 animate-pulse">Scanning GitHub file registry...</td></tr>`;
-            
+            tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400 animate-pulse">Scanning live registry...</td></tr>`;
             try {
-                // Fetch the list of files inside the /listings/ directory via GitHub's public API
                 const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings`;
                 const response = await fetch(url);
                 const files = await response.json();
                 
-                // Filter out any non-JSON files or the TEMPLATE itself
                 const activeListingFiles = files.filter(f => f.name.endsWith('.json') && f.name !== 'TEMPLATE.json');
-                
                 if (activeListingFiles.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">The marketplace is currently empty!</td></tr>`;
                     return;
                 }
 
-                // Download and read the contents of every single player file simultaneously
                 const fetchPromises = activeListingFiles.map(file => fetch(file.download_url).then(res => res.json()));
                 liveMarketData = await Promise.all(fetchPromises);
-                
                 displayMarketListings(liveMarketData);
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-rose-400">Error reading directory items from GitHub.</td></tr>`;
-                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-rose-400">Error reading marketplace entries.</td></tr>`;
             }
         }
 
         function displayMarketListings(listings) {
             const tbody = document.getElementById('market-table-body');
             if(listings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">No matching marketplace entries found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">No entries found.</td></tr>`;
                 return;
             }
-            
             tbody.innerHTML = listings.map(item => `
                 <tr class="hover:bg-gray-700/50 transition-colors">
                     <td class="p-4 font-semibold text-white">${item.itemName || 'Unknown'}</td>
@@ -141,9 +180,7 @@
                     <td class="p-4 text-purple-400 font-medium">${item.priceRange || 'N/A'}</td>
                     <td class="p-4 text-gray-300 font-mono">${item.seller || 'Anonymous'}</td>
                     <td class="p-4 text-gray-400 text-xs">${item.datePosted || 'Recent'}</td>
-                    <td class="p-4">
-                        <a href="https://discord.com/users" target="_blank" class="text-xs px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-medium inline-block shadow">Message</a>
-                    </td>
+                    <td class="p-4"><a href="https://discord.com/users" target="_blank" class="text-xs px-3 py-1.5 rounded bg-indigo-600 text-white inline-block">Message</a></td>
                 </tr>
             `).join('');
         }
@@ -151,47 +188,36 @@
         function filterMarket() {
             const query = document.getElementById('market-search').value.toLowerCase();
             const rangeFilter = document.getElementById('market-range-filter').value;
-            
             const filtered = liveMarketData.filter(item => {
-                const matchesSearch = (item.itemName && item.itemName.toLowerCase().includes(query)) || 
-                                      (item.seller && item.seller.toLowerCase().includes(query));
-                const matchesRange = rangeFilter === "" || item.priceRange === rangeFilter;
-                return matchesSearch && matchesRange;
+                const matchesSearch = (item.itemName && item.itemName.toLowerCase().includes(query)) || (item.seller && item.seller.toLowerCase().includes(query));
+                return matchesSearch && (rangeFilter === "" || item.priceRange === rangeFilter);
             });
             displayMarketListings(filtered);
         }
 
-        // Wiki filter functions
         function renderGearCards(data) {
             const grid = document.getElementById('gear-grid');
             grid.innerHTML = data.map(item => `
-                <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 hover:border-indigo-500 flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs px-2 py-0.5 rounded-full font-bold uppercase bg-gray-700 text-indigo-300">${item.slot}</span>
-                            <span class="text-xs font-semibold text-gray-400">${item.rarity}</span>
-                        </div>
-                        <h3 class="text-lg font-bold text-white mb-4">${item.name}</h3>
-                    </div>
-                    <div class="bg-gray-900/60 p-3 rounded-lg border border-gray-700 flex justify-between items-center">
-                        <span class="text-gray-400 text-sm">Base Effect:</span>
-                        <span class="font-bold text-emerald-400">${item.bonus} ${item.stat}</span>
-                    </div>
+                <div class="bg-gray-800 p-5 rounded-xl border border-gray-700">
+                    <div class="flex justify-between mb-2"><span class="text-xs px-2 py-0.5 rounded-full font-bold bg-gray-700 text-indigo-300">${item.slot}</span><span class="text-xs font-semibold text-gray-400">Base: ${item.baseStat}</span></div>
+                    <h3 class="text-lg font-bold text-white mb-4">${item.name}</h3>
+                    <div class="bg-gray-900/60 p-3 rounded-lg border border-gray-700 flex justify-between"><span>Sidestat:</span><span class="font-bold text-emerald-400">${item.sideBonus} ${item.sideStat}</span></div>
                 </div>
             `).join('');
         }
 
         function filterGear() {
-            const query = document.getElementById('wiki-search').value.toLowerCase();
+            const nameQuery = document.getElementById('wiki-search').value.toLowerCase();
+            const statQuery = document.getElementById('wiki-stat-search').value.toLowerCase();
             const slotFilter = document.getElementById('wiki-slot').value;
             const filtered = masterGearList.filter(item => {
-                return item.name.toLowerCase().includes(query) && (slotFilter === "" || item.slot === slotFilter);
+                return item.name.toLowerCase().includes(nameQuery) && (item.sideStat.toLowerCase().includes(statQuery) || item.baseStat.toLowerCase().includes(statQuery)) && (slotFilter === "" || item.slot === slotFilter);
             });
             renderGearCards(filtered);
         }
 
-        // Init
         renderGearCards(masterGearList);
+        populateFormDropdown();
     </script>
 </body>
 </html>
