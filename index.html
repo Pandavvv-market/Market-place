@@ -155,6 +155,8 @@
         const GITHUB_TOKEN = tokenPart1 + tokenPart2;
 
         const masterGearList = [
+            { name: "Laser Rifle", slot: "Weapon", sidestat: "Attack", value: "+0.5", price: "400 Bux", seller: "Pandavvv" },
+            { name: "Combat Helmet", slot: "Head", sidestat: "Attack", value: "+0.2", price: "150 Bux", seller: "Pandavvv" }
         ];
 
         let externalUserListings = []; 
@@ -210,7 +212,7 @@
                 const response = await fetch(url, {
                     method: "PUT",
                     headers: {
-                        "Authorization": "Token " + GITHUB_TOKEN,
+                        "Authorization": "token " + GITHUB_TOKEN,
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
@@ -250,7 +252,6 @@
                         fetch(`${file.download_url}?cb=${Date.now()}`)
                             .then(res => res.json())
                             .then(data => {
-                                // FIXED RE-MAPPING LOGIC: Creates a secure metadata link back to file context
                                 return { ...data, _sha: file.sha, _filename: file.name };
                             })
                     );
@@ -329,24 +330,34 @@
                 return;
             }
 
-            tbody.innerHTML = listings.map(item => `
-                <tr class="hover:bg-gray-800/60 border-b border-gray-700/40">
-                    <td class="p-4 font-semibold text-white">${item.itemName || 'N/A'}</td>
-                    <td class="p-4 text-rose-300 font-medium">${item.sidestat || 'N/A'} | <span class="text-amber-400">${item.price || 'N/A'}</span></td>
-                    <td class="p-4 text-gray-400 font-mono text-xs">${item.seller || 'N/A'}</td>
-                    <td class="p-4 text-right">
-                        <button onclick="requestDeleteListing('${item._filename}', '${item._sha}', this)" class="text-xs px-3 py-1.5 font-bold rounded bg-rose-600/80 hover:bg-rose-500 text-white transition-colors shadow-md">Delete Listing</button>
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = listings.map(item => {
+                const name = item.itemName || item.name || "Unknown Item";
+                const stat = item.sidestat || item.baseStat || "N/A";
+                const value = item.value || item.sidestatRoll || "";
+                const price = item.price || "N/A";
+                const seller = item.seller || "Unknown";
+                const filename = item._filename || "";
+                const sha = item._sha || "";
+
+                return `
+                    <tr class="hover:bg-gray-800/60 border-b border-gray-700/40">
+                        <td class="p-4 font-semibold text-white">${name}</td>
+                        <td class="p-4 text-rose-300 font-medium">${stat} | <span class="text-amber-400">${value} [${price}]</span></td>
+                        <td class="p-4 text-gray-400 font-mono text-xs">${seller}</td>
+                        <td class="p-4 text-right">
+                            <button onclick="requestDeleteListing('${filename}', '${sha}', this)" class="text-xs px-3 py-1.5 font-bold rounded bg-rose-600/80 hover:bg-rose-500 text-white transition-colors shadow-md">Delete Listing</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         async function requestDeleteListing(filename, sha, buttonElement) {
             if (!filename || filename === "undefined" || !sha || sha === "undefined") {
-                alert("Error: Internal database keys mismatched. Clear cache (Ctrl + F5) and try again.");
+                alert("Error: Tracking properties are missing. Please complete a hard refresh (Ctrl + F5) to resync the database files.");
                 return;
             }
-            if (!confirm(`Are you sure you want to permanently delete this listing record file (${filename}) from GitHub?`)) return;
+            if (!confirm(`Are you sure you want to permanently delete this listing file?`)) return;
             
             buttonElement.disabled = true;
             buttonElement.innerText = "Purging...";
@@ -356,11 +367,11 @@
                 const response = await fetch(url, {
                     method: "DELETE",
                     headers: {
-                        "Authorization": "Token " + GITHUB_TOKEN,
+                        "Authorization": "token " + GITHUB_TOKEN,
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        message: `Administrative removal of listing entry file: ${filename}`,
+                        message: `Administrative removal of listing entry file`,
                         sha: sha
                     })
                 });
@@ -400,7 +411,7 @@
                 const matchesSearch = !searchQuery || 
                     (item.name && item.name.toLowerCase().includes(searchQuery)) || 
                     (item.value && item.value.toLowerCase().includes(searchQuery)) ||
-                    (item.seller && item.seller.toLowerCase().includes(searchQuery));
+                    (item.seller && item.seller.toLowerCase().includes(query));
 
                 let matchesSidestat = true;
                 if (sidestatFilter) {
