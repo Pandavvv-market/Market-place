@@ -164,7 +164,7 @@
             };
 
             const fileName = `shop-${payload.seller.replace(/[^a-zA-Z0-9]/g, '')}-${Date.now()}.json`;
-            const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings/${fileName}`;
+            const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings/${fileName}?cb=${Date.now()}`;
 
             try {
                 const response = await fetch(url, {
@@ -198,25 +198,25 @@
         }
 
         async function fetchCombinedRegistry() {
-            try {
-                const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings`;
-                const response = await fetch(url);
-                const files = await response.json();
-                
-                const activeListingFiles = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json') && f.name !== 'TEMPLATE.json') : [];
-                
-                if (activeListingFiles.length > 0) {
-                    const fetchPromises = activeListingFiles.map(file => 
-                        fetch(file.download_url)
-                            .then(res => res.json())
-                            .then(data => ({ ...data, _sha: file.sha, _filename: file.name }))
+             try {
+        const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings?cb=${Date.now()}`;
+        const response = await fetch(url);
+        const files = await response.json();
+        
+        const activeListingFiles = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json') && f.name !== 'TEMPLATE.json') : [];
+        
+        if (activeListingFiles.length > 0) {
+            const fetchPromises = activeListingFiles.map(file => 
+                fetch(`${file.download_url}?cb=${Date.now()}`)
+                    .then(res => res.json())
+                    .then(data => ({ ...data, _sha: file.sha, _filename: file.name }))
                     );
-                    externalUserListings = await Promise.all(fetchPromises);
+            externalUserListings = await Promise.all(fetchPromises);
                 } else {
-                    externalUserListings = [];
+            externalUserListings = [];
                 }
             } catch (err) {
-                externalUserListings = [];
+        externalUserListings = [];
             }
             
             const combinedData = [...masterGearList, ...externalUserListings.map(item => ({
