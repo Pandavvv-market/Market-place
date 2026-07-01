@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PSS Gear Hub</title>
+    <title>PSS Active Market</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
@@ -12,32 +12,14 @@
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <h1 class="text-2xl font-bold text-indigo-400 uppercase tracking-wider">PSS Open Market</h1>
             <div class="flex gap-4">
-                <button onclick="switchTab('wiki')" id="btn-wiki" class="px-4 py-2 rounded bg-indigo-600 text-white font-medium">🛡️ Gear Lookup</button>
-                <button onclick="switchTab('market')" id="btn-market" class="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium">🏪 Active Shop Listings</button>
-                <button onclick="checkPasswordAndPost()" class="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold">+ Post a Listing</button>
+                <div class="px-4 py-2 rounded bg-indigo-600 text-white font-medium flex items-center gap-2">🏪 Active Shop Listings</div>
+                <button onclick="checkPasswordAndPost()" class="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors">+ Post a Listing</button>
             </div>
         </div>
     </header>
 
     <main class="max-w-6xl mx-auto p-4 md:p-6">
-        
-        <section id="view-wiki" class="space-y-6">
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 flex flex-col md:flex-row gap-4">
-                <input type="text" id="wiki-search" oninput="filterGear()" placeholder="Search gear name..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
-                <input type="text" id="wiki-stat-search" oninput="filterGear()" placeholder="Search by sidestat value (e.g. Attack, Pilot)..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
-                <select id="wiki-slot" onchange="filterGear()" class="bg-gray-900 border border-gray-600 rounded px-4 py-2 min-w-[150px] focus:outline-none focus:border-indigo-500 text-white">
-                    <option value="">All Slots</option>
-                    <option value="Weapon">Weapon</option>
-                    <option value="Head">Head</option>
-                    <option value="Body">Body</option>
-                    <option value="Leg">Leg</option>
-                    <option value="Accessory">Accessory</option>
-                </select>
-            </div>
-            <div id="gear-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-        </section>
-
-        <section id="view-market" class="hidden space-y-6">
+        <section id="view-market" class="space-y-6">
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 flex flex-col md:flex-row gap-4">
                 <input type="text" id="market-search" oninput="filterMarket()" placeholder="Search active shop inventory ledger..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
             </div>
@@ -51,45 +33,37 @@
                             <th class="p-4 font-semibold text-sm">Available Variants (Sidestat | Price | Seller)</th>
                         </tr>
                     </thead>
-                    <tbody id="market-table-body" class="divide-y divide-gray-700 text-sm"></tbody>
+                    <tbody id="market-table-body" class="divide-y divide-gray-700 text-sm">
+                        </tbody>
                 </table>
             </div>
         </section>
     </main>
 
     <script>
-        // CONFIGURATION: Set your shop password here
-        const MARKET_PASSWORD = "0203"; 
-
-        // METHOD 1: YOUR PERSONAL HAND-WRITTEN INVENTORY BACKEND
+        // =========================================================================
+        // CONFIGURATION: Set your password and manual inventory here
+        // =========================================================================
+        const MARKET_PASSWORD = "0302"; // CHANGE THIS PASSWORD TO ANYTHING YOU WANT
+        
         const masterGearList = [
-            { name: "Laser Rifle", slot: "Weapon", baseStat: "Weapon", sideBonus: "+0.5", sideStat: "Attack", price: "400 Bux", seller: "Pandavvv" },
-            { name: "Combat Helmet", slot: "Head", baseStat: "HP", sideBonus: "+0.2", sideStat: "Attack", price: "150 Bux", seller: "Pandavvv" }
+            
         ];
 
         const githubUser = "Pandavvv-market";
         const githubRepo = "Market-place";
         let externalUserListings = []; 
 
-        // Password protection check function
         function checkPasswordAndPost() {
             const userInput = prompt("Enter the Secret Seller Password to access the submission form:");
             if (userInput === MARKET_PASSWORD) {
+                // Routes directly to your specific repository template form layout
                 window.open(`https://github.com/${githubUser}/${githubRepo}/issues/new?template=post-item.yml`, '_blank');
             } else if (userInput !== null) {
                 alert("Incorrect Password! Access denied.");
             }
         }
 
-        function switchTab(tab) {
-            document.getElementById('view-wiki').classList.toggle('hidden', tab !== 'wiki');
-            document.getElementById('view-market').classList.toggle('hidden', tab !== 'market');
-            document.getElementById('btn-wiki').className = tab === 'wiki' ? "px-4 py-2 rounded bg-indigo-600 text-white font-medium" : "px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium";
-            document.getElementById('btn-market').className = tab === 'market' ? "px-4 py-2 rounded bg-indigo-600 text-white font-medium" : "px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium";
-            if (tab === 'market') fetchCombinedRegistry();
-        }
-
-        // Fetches files created by other users and joins them with your manual list
         async function fetchCombinedRegistry() {
             const tbody = document.getElementById('market-table-body');
             tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-400 animate-pulse">Scanning database registry...</td></tr>`;
@@ -108,14 +82,12 @@
                     externalUserListings = [];
                 }
             } catch (err) {
-                console.warn("No folder listings found or API wait limit active. Using local fallback.");
+                console.warn("API wait limit active or missing folder. Using manual registry.");
                 externalUserListings = [];
             }
             
-            // Unify your manual master entries with public user form uploads seamlessly
             const combinedData = [...masterGearList, ...externalUserListings.map(item => ({
                 name: item.itemName,
-                slot: "Unknown", 
                 baseStat: item.baseStat || "N/A",
                 sideBonus: "", 
                 sideStat: item.sidestat,
@@ -180,36 +152,8 @@
             displayMarketListings(filtered);
         }
 
-        function renderGearCards(data) {
-            const grid = document.getElementById('gear-grid');
-            grid.innerHTML = data.map(item => `
-                <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 hover:border-indigo-500 flex flex-col justify-between shadow-md">
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs px-2 py-0.5 rounded-full font-bold uppercase bg-gray-700 text-indigo-300">${item.slot}</span>
-                            <span class="text-xs font-semibold text-gray-400">Base: ${item.baseStat}</span>
-                        </div>
-                        <h3 class="text-lg font-bold text-white mb-4">${item.name}</h3>
-                    </div>
-                    <div class="bg-gray-900/60 p-3 rounded-lg border border-gray-700 flex justify-between items-center">
-                        <span class="text-gray-400 text-sm">Sidestat:</span>
-                        <span class="font-bold text-emerald-400">${item.sideBonus} ${item.sideStat}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function filterGear() {
-            const nameQuery = document.getElementById('wiki-search').value.toLowerCase();
-            const statQuery = document.getElementById('wiki-stat-search').value.toLowerCase();
-            const slotFilter = document.getElementById('wiki-slot').value;
-            const filtered = masterGearList.filter(item => {
-                return item.name.toLowerCase().includes(nameQuery) && (item.sideStat.toLowerCase().includes(statQuery) || item.baseStat.toLowerCase().includes(statQuery)) && (slotFilter === "" || item.slot === slotFilter);
-            });
-            renderGearCards(filtered);
-        }
-
-        renderGearCards(masterGearList);
+        // Run dashboard on start
+        fetchCombinedRegistry();
     </script>
 </body>
 </html>
