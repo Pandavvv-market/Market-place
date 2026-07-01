@@ -155,6 +155,8 @@
         const GITHUB_TOKEN = tokenPart1 + tokenPart2;
 
         const masterGearList = [
+            { name: "Laser Rifle", slot: "Weapon", sidestat: "Attack", value: "+0.5", price: "400 Bux", seller: "Pandavvv" },
+            { name: "Combat Helmet", slot: "Head", sidestat: "Attack", value: "+0.2", price: "150 Bux", seller: "Pandavvv" }
         ];
 
         let externalUserListings = []; 
@@ -263,7 +265,7 @@
             }
             
             const combinedData = [...masterGearList, ...externalUserListings.map(item => ({
-                name: item.itemName,
+                name: item.itemName || item.name,
                 sidestat: item.sidestat || "N/A",
                 slot: item.slot || "Unknown", 
                 value: item.value || "",
@@ -287,10 +289,19 @@
             const grouped = {};
             listings.forEach(item => {
                 if (!item.name) return;
-                if (!grouped[item.name]) {
-                    grouped[item.name] = { name: item.name, sidestat: item.sidestat, slot: item.slot, variants: [] };
+                
+                // CHANGED: Group by Name + Sidestat combined key so separate stats don't merge rows
+                const groupKey = `${item.name}_${item.sidestat}`;
+                
+                if (!grouped[groupKey]) {
+                    grouped[groupKey] = { 
+                        name: item.name, 
+                        sidestat: item.sidestat, 
+                        slot: item.slot, 
+                        variants: [] 
+                    };
                 }
-                grouped[item.name].variants.push({
+                grouped[groupKey].variants.push({
                     value: item.value || "",
                     price: item.price,
                     seller: item.seller
@@ -397,7 +408,7 @@
             const typeFilter = document.getElementById('filter-slot').value.toLowerCase();
 
             const combined = [...masterGearList, ...externalUserListings.map(item => ({
-                name: item.itemName, 
+                name: item.itemName || item.name, 
                 sidestat: item.sidestat || "N/A", 
                 slot: item.slot || "Unknown", 
                 value: item.value || "", 
@@ -409,7 +420,7 @@
                 const matchesSearch = !searchQuery || 
                     (item.name && item.name.toLowerCase().includes(searchQuery)) || 
                     (item.value && item.value.toLowerCase().includes(searchQuery)) ||
-                    (item.seller && item.seller.toLowerCase().includes(query));
+                    (item.seller && item.seller.toLowerCase().includes(searchQuery));
 
                 let matchesSidestat = true;
                 if (sidestatFilter) {
