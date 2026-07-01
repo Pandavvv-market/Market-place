@@ -1,33 +1,61 @@
-name: Save Form Submission To Database
+name: Auto Post Mobile Listing
 
 on:
-  repository_dispatch:
-    types: [staticforms_submission]
+  issues:
+    types: [opened]
 
 jobs:
-  create_json:
+  create-listing:
+    if: contains(github.event.issue.labels.*.name, 'market-listing')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Write Listing File
+      - name: Parse Issue Template Fields
+        id: parse
         run: |
-          cat <<EOF > listings/listing-${{ github.event.client_payload.seller }}-${{ github.run_id }}.json
-          {
-            "itemName": "${{ github.event.client_payload.itemName }}",
-            "sidestat": "${{ github.event.client_payload.sidestat }}",
-            "price": "${{ github.event.client_payload.price }}",
-            "priceRange": "${{ github.event.client_payload.priceRange }}",
-            "seller": "${{ github.event.client_payload.seller }}",
+          # Use a python script to cleanly extract data out of the text form blocks
+          cat << 'EOF' > parse.py
+          import os, json, re
+          body = os.environ.get("ISSUE_BODY", "")
+          
+          item = re.search(r"### Gear Item\s*\n\s*(.*)", body)
+          stat = re.search(r"### Sidestat\s*\n\s*(.*)", body)
+          price = re.search(r"### Price\s*\n\s*(.*)", body)
+          range_tier = re.search(r"### Price Range\s*\n\s*(.*)", body)
+          seller = re.search(r"### Discord Handle\s*\n\s*(.*)", body)
+          
+          data = {
+            "itemName": item.group(1).strip() if item else "Unknown",
+            "sidestat": stat.group(1).strip() if stat else "None",
+            "price": price.group(1).strip() if price else "Contact",
+            "priceRange": range_tier.group(1).strip() if range_tier else "Medium",
+            "seller": seller.group(1).strip() if seller else "Anonymous",
             "datePosted": "2026-07-01"
           }
+          
+          # Avoid blank file breaks by fallback names
+          file_slug = re.sub(r'[^a-zA-Z0-9]', '', data["seller"])[:15]
+          if not file_slug: file_slug = "listing"
+          
+          with open(f"listings/shop-{file_slug}-{os.environ.get('RUN_ID')}.json", "w") as f:
+              json.dump(data, f, indent=2)
           EOF
+          export ISSUE_BODY="${{ github.event.issue.body }}"
+          export RUN_ID="${{ github.run_id }}"
+          python3 parse.py
 
-      - name: Commit & Push To Main Branch
+      - name: Publish to Repository
         run: |
           git config --global user.name "Marketplace Bot"
           git config --global user.email "bot@market.internal"
           git add listings/*.json
-          git commit -m "Auto-published live listing for ${{ github.event.client_payload.seller }}"
+          git commit -m "Auto-published market listing file"
           git push
+
+      - name: Close Form Issue
+        run: |
+          gh issue close ${{ github.event.issue.number }} --reason "completed"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
