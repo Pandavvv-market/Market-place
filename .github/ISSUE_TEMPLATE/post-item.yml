@@ -28,9 +28,9 @@ body:
     id: price
     attributes:
       label: Price
-      placeholder: "e.g. 500 Bux"
+      placeholder: ""
     validations:
-      required: true
+      required: false
   - type: input
     id: ign
     attributes:
