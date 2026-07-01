@@ -1,0 +1,43 @@
+name: "+ Post a Listing Form"
+description: Mobile-friendly shop entry template
+title: "[Listing]: New Gear Offer"
+labels: ["market-listing"]
+body:
+  - type: input
+    id: itemName
+    attributes:
+      label: Gear Item
+      placeholder: "e.g. Laser Rifle"
+    validations:
+      required: true
+  - type: input
+    id: sidestat
+    attributes:
+      label: Sidestat
+      placeholder: "e.g. +2.4 Attack"
+    validations:
+      required: true
+  - type: input
+    id: price
+    attributes:
+      label: Price
+      placeholder: "e.g. 500 Bux"
+    validations:
+      required: true
+  - type: dropdown
+    id: priceRange
+    attributes:
+      label: Price Range
+      options:
+        - Low
+        - Medium
+        - High
+    validations:
+      required: true
+  - type: input
+    id: seller
+    attributes:
+      label: Discord Handle
+      placeholder: "username#0000"
+    validations:
+      required: true
