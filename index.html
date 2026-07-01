@@ -8,20 +8,20 @@
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
 
-    <!-- Header Navigation -->
     <header class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50 shadow-md">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <h1 class="text-2xl font-bold text-indigo-400 uppercase tracking-wider">Pandavvv's Open Market</h1>
+            <h1 class="text-2xl font-bold text-indigo-400 uppercase tracking-wider">PSS Open Market</h1>
             <div class="flex gap-4">
+                <button onclick="switchTab('wiki')" id="btn-wiki" class="px-4 py-2 rounded bg-indigo-600 text-white font-medium">🛡️ Gear Lookup</button>
+                <button onclick="switchTab('market')" id="btn-market" class="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium">🏪 Active Shop Listings</button>
+                <button onclick="checkPasswordAndPost()" class="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold">+ Post a Listing</button>
             </div>
         </div>
     </header>
 
     <main class="max-w-6xl mx-auto p-4 md:p-6">
         
-        <!-- WIKI VIEW -->
         <section id="view-wiki" class="space-y-6">
-            <!-- Multi-Search bar area for Wiki -->
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 flex flex-col md:flex-row gap-4">
                 <input type="text" id="wiki-search" oninput="filterGear()" placeholder="Search gear name..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
                 <input type="text" id="wiki-stat-search" oninput="filterGear()" placeholder="Search by sidestat value (e.g. Attack, Pilot)..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
@@ -34,17 +34,12 @@
                     <option value="Accessory">Accessory</option>
                 </select>
             </div>
-            
-            <div id="gear-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Wiki Cards Render Here -->
-            </div>
+            <div id="gear-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </section>
 
-        <!-- MARKETPLACE VIEW -->
         <section id="view-market" class="hidden space-y-6">
-            <!-- Search Bar for Marketplace Stock -->
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 flex flex-col md:flex-row gap-4">
-                <input type="text" id="market-search" oninput="filterMarket()" placeholder="Search your stock ledger..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
+                <input type="text" id="market-search" oninput="filterMarket()" placeholder="Search active shop inventory ledger..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
             </div>
 
             <div class="overflow-x-auto bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
@@ -56,56 +51,97 @@
                             <th class="p-4 font-semibold text-sm">Available Variants (Sidestat | Price | Seller)</th>
                         </tr>
                     </thead>
-                    <tbody id="market-table-body" class="divide-y divide-gray-700 text-sm">
-                        <!-- Grouped Marketplace rows render here -->
-                    </tbody>
+                    <tbody id="market-table-body" class="divide-y divide-gray-700 text-sm"></tbody>
                 </table>
             </div>
         </section>
     </main>
 
     <script>
-        // =========================================================================
-        // ADMIN DATABASE: ADD DUPES HERE TO TEST Grouping Logic
-        // =========================================================================
+        // CONFIGURATION: Set your shop password here
+        const MARKET_PASSWORD = "0203"; 
+
+        // METHOD 1: YOUR PERSONAL HAND-WRITTEN INVENTORY BACKEND
         const masterGearList = [
             { name: "Laser Rifle", slot: "Weapon", baseStat: "Weapon", sideBonus: "+0.5", sideStat: "Attack", price: "400 Bux", seller: "Pandavvv" },
-            { name: "Laser Rifle", slot: "Weapon", baseStat: "Weapon", sideBonus: "+0.7", sideStat: "HP", price: "600 Bux", seller: "Pandavvv" }, // Duplicate example
-            { name: "Combat Helmet", slot: "Head", baseStat: "HP", sideBonus: "+0.2", sideStat: "Attack", price: "150 Bux", seller: "Pandavvv" },
-            { name: "80's Sunnies", slot: "Accessory", baseStat: "Engine", sideBonus: "+2.0", sideStat: "Pilot", price: "Offer", seller: "Pandavvv" },
-            { name: "Titan Armor", slot: "Body", baseStat: "HP", sideBonus: "+3.0", sideStat: "Repair", price: "SOLD", seller: "Pandavvv" }
+            { name: "Combat Helmet", slot: "Head", baseStat: "HP", sideBonus: "+0.2", sideStat: "Attack", price: "150 Bux", seller: "Pandavvv" }
         ];
 
-        // Core View tab routing
+        const githubUser = "Pandavvv-market";
+        const githubRepo = "Market-place";
+        let externalUserListings = []; 
+
+        // Password protection check function
+        function checkPasswordAndPost() {
+            const userInput = prompt("Enter the Secret Seller Password to access the submission form:");
+            if (userInput === MARKET_PASSWORD) {
+                window.open(`https://github.com/${githubUser}/${githubRepo}/issues/new?template=post-item.yml`, '_blank');
+            } else if (userInput !== null) {
+                alert("Incorrect Password! Access denied.");
+            }
+        }
+
         function switchTab(tab) {
             document.getElementById('view-wiki').classList.toggle('hidden', tab !== 'wiki');
             document.getElementById('view-market').classList.toggle('hidden', tab !== 'market');
             document.getElementById('btn-wiki').className = tab === 'wiki' ? "px-4 py-2 rounded bg-indigo-600 text-white font-medium" : "px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium";
             document.getElementById('btn-market').className = tab === 'market' ? "px-4 py-2 rounded bg-indigo-600 text-white font-medium" : "px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium";
-            if (tab === 'market') displayMarketListings(masterGearList);
+            if (tab === 'market') fetchCombinedRegistry();
         }
 
-        // Render Marketplace layout engine (with grouping logic)
+        // Fetches files created by other users and joins them with your manual list
+        async function fetchCombinedRegistry() {
+            const tbody = document.getElementById('market-table-body');
+            tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-400 animate-pulse">Scanning database registry...</td></tr>`;
+            
+            try {
+                const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings`;
+                const response = await fetch(url);
+                const files = await response.json();
+                
+                const activeListingFiles = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json') && f.name !== 'TEMPLATE.json') : [];
+                
+                if (activeListingFiles.length > 0) {
+                    const fetchPromises = activeListingFiles.map(file => fetch(file.download_url).then(res => res.json()));
+                    externalUserListings = await Promise.all(fetchPromises);
+                } else {
+                    externalUserListings = [];
+                }
+            } catch (err) {
+                console.warn("No folder listings found or API wait limit active. Using local fallback.");
+                externalUserListings = [];
+            }
+            
+            // Unify your manual master entries with public user form uploads seamlessly
+            const combinedData = [...masterGearList, ...externalUserListings.map(item => ({
+                name: item.itemName,
+                slot: "Unknown", 
+                baseStat: item.baseStat || "N/A",
+                sideBonus: "", 
+                sideStat: item.sidestat,
+                price: item.price,
+                seller: item.seller
+            }))];
+
+            displayMarketListings(combinedData);
+        }
+
         function displayMarketListings(listings) {
             const tbody = document.getElementById('market-table-body');
             if(listings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-500">No items match your search.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-500">No items found.</td></tr>`;
                 return;
             }
             
-            // Grouping items by their name
             const grouped = {};
             listings.forEach(item => {
+                if (!item.name) return;
                 if (!grouped[item.name]) {
-                    grouped[item.name] = {
-                        name: item.name,
-                        baseStat: item.baseStat,
-                        variants: []
-                    };
+                    grouped[item.name] = { name: item.name, baseStat: item.baseStat, variants: [] };
                 }
                 grouped[item.name].variants.push({
-                    sideBonus: item.sideBonus,
-                    sideStat: item.sideStat,
+                    sideBonus: item.sideBonus || "",
+                    sideStat: item.sideStat || "",
                     price: item.price,
                     seller: item.seller
                 });
@@ -126,7 +162,7 @@
                                         <span class="text-gray-500 hidden sm:inline">|</span>
                                         <span class="text-gray-400 font-mono text-xs hidden sm:inline">${v.seller}</span>
                                     </div>
-                                    <a href="https://discord.com/users" target="_blank" class="text-xs px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-medium shadow transition-colors">Contact</a>
+                                    <a href="https://discord.com/users" target="_blank" class="text-xs px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-medium shadow">Contact</a>
                                 </div>
                             `).join('')}
                         </div>
@@ -135,24 +171,19 @@
             `).join('');
         }
 
-        // Filter algorithm for active shop records
         function filterMarket() {
             const query = document.getElementById('market-search').value.toLowerCase();
-            const filtered = masterGearList.filter(item => {
-                return item.name.toLowerCase().includes(query) || item.sideStat.toLowerCase().includes(query);
-            });
+            const combined = [...masterGearList, ...externalUserListings.map(item => ({
+                name: item.itemName, baseStat: item.baseStat || "N/A", sideBonus: "", sideStat: item.sidestat, price: item.price, seller: item.seller
+            }))];
+            const filtered = combined.filter(item => (item.name && item.name.toLowerCase().includes(query)) || (item.sideStat && item.sideStat.toLowerCase().includes(query)));
             displayMarketListings(filtered);
         }
 
-        // Render visual card modules inside lookup grid
         function renderGearCards(data) {
             const grid = document.getElementById('gear-grid');
-            if (data.length === 0) {
-                grid.innerHTML = `<div class="col-span-full p-8 text-center text-gray-500 bg-gray-800 rounded-xl border border-gray-700">No matching items found.</div>`;
-                return;
-            }
             grid.innerHTML = data.map(item => `
-                <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 hover:border-indigo-500 flex flex-col justify-between shadow-md transition-all">
+                <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 hover:border-indigo-500 flex flex-col justify-between shadow-md">
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs px-2 py-0.5 rounded-full font-bold uppercase bg-gray-700 text-indigo-300">${item.slot}</span>
@@ -168,22 +199,16 @@
             `).join('');
         }
 
-        // Multi-tier filtering loop engine for gear specs
         function filterGear() {
             const nameQuery = document.getElementById('wiki-search').value.toLowerCase();
             const statQuery = document.getElementById('wiki-stat-search').value.toLowerCase();
             const slotFilter = document.getElementById('wiki-slot').value;
-            
             const filtered = masterGearList.filter(item => {
-                const matchesName = item.name.toLowerCase().includes(nameQuery);
-                const matchesStat = item.sideStat.toLowerCase().includes(statQuery) || item.baseStat.toLowerCase().includes(statQuery);
-                const matchesSlot = slotFilter === "" || item.slot === slotFilter;
-                return matchesName && matchesStat && matchesSlot;
+                return item.name.toLowerCase().includes(nameQuery) && (item.sideStat.toLowerCase().includes(statQuery) || item.baseStat.toLowerCase().includes(statQuery)) && (slotFilter === "" || item.slot === slotFilter);
             });
             renderGearCards(filtered);
         }
 
-        // Initialize execution on runtime mount
         renderGearCards(masterGearList);
     </script>
 </body>
