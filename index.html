@@ -8,10 +8,12 @@
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
 
+    <!-- Header Navigation -->
     <header class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50 shadow-md">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <h1 class="text-2xl font-bold text-indigo-400 uppercase tracking-wider">Pandavvv's 24hr Open Market</h1>
             
+            <!-- Player Key Login Row -->
             <div class="flex flex-wrap items-center gap-3">
                 <input type="password" id="access-password" placeholder="Enter Your Key..." class="bg-gray-900 border border-gray-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-indigo-500 w-40 text-white">
                 <button onclick="handlePostAction()" class="px-4 py-1.5 text-sm rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors">+ Post Listing</button>
@@ -20,6 +22,7 @@
         </div>
     </header>
 
+    <!-- IN-SITE POPUP FORM MODAL -->
     <div id="formModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-gray-800 border border-gray-700 rounded-xl w-full max-w-xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button onclick="toggleModal(false)" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold">&times;</button>
@@ -29,12 +32,14 @@
                     <h2 class="text-xl font-bold text-indigo-400">Create Market Offers</h2>
                     <p id="active-user-badge" class="text-xs text-emerald-400 font-mono mt-0.5">Posting as: Guest</p>
                 </div>
+                <!-- Mode Toggle Switches -->
                 <div class="flex bg-gray-900 p-1 rounded border border-gray-700 text-xs font-bold">
                     <button onclick="setFormMode('single')" id="mode-single-btn" class="px-3 py-1 rounded bg-indigo-600 text-white transition-colors">Single Item</button>
                     <button onclick="setFormMode('bulk')" id="mode-bulk-btn" class="px-3 py-1 rounded text-gray-400 hover:text-white transition-colors">⚡ Bulk Paste</button>
                 </div>
             </div>
             
+            <!-- SINGLE ITEM INPUT CONTAINER -->
             <form id="submissionForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
                 <div id="single-fields" class="space-y-4">
                     <div>
@@ -42,6 +47,18 @@
                         <input type="text" id="form-itemName" placeholder="e.g. Laser Rifle, Hero Blueprint" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
+                        <!-- SWAPPED IN MODAL: Item Type is now on the left, Sidestat on the right -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Item Type (Slot)</label>
+                            <select id="form-slot" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                                <option value="Weapon">Weapon</option>
+                                <option value="Head">Head</option>
+                                <option value="Body">Body</option>
+                                <option value="Leg">Leg</option>
+                                <option value="Accessory">Accessory</option>
+                                <option value="Blueprint">Blueprint</option>
+                            </select>
+                        </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Sidestat</label>
                             <select id="form-sidestat" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
@@ -56,17 +73,6 @@
                                 <option value="Science">Science</option>
                                 <option value="Stamina (STA)">Stamina (STA)</option>
                                 <option value="Weapon">Weapon</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Item Type (Slot)</label>
-                            <select id="form-slot" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
-                                <option value="Weapon">Weapon</option>
-                                <option value="Head">Head</option>
-                                <option value="Body">Body</option>
-                                <option value="Leg">Leg</option>
-                                <option value="Accessory">Accessory</option>
-                                <option value="Blueprint">Blueprint</option>
                             </select>
                         </div>
                     </div>
@@ -86,12 +92,14 @@
                     </div>
                 </div>
 
+                <!-- BULK PASTING INTERFACE CONTAINER -->
                 <div id="bulk-fields" class="space-y-4 hidden">
                     <div class="bg-gray-900/60 p-3 rounded border border-gray-700 text-xs text-gray-400 space-y-1">
                         <p class="font-bold text-indigo-400">📋 Format Rules for Bulk Pasting:</p>
+                        <!-- CHANGED: Clarified input formatting description to match structural column swap rules -->
                         <p>Separate values with commas or tabs. One item per line. Do not type your username:</p>
-                        <p class="font-mono text-emerald-400 bg-black/40 p-1.5 rounded mt-1">Item Name, Sidestat, Type, Value, Price</p>
-                        <p class="text-[10px] text-gray-500 pt-1">Example: Hero Blueprint, None, Blueprint, N/A, 1200 Bux</p>
+                        <p class="font-mono text-emerald-400 bg-black/40 p-1.5 rounded mt-1">Item Name, Type, Sidestat, Value, Price</p>
+                        <p class="text-[10px] text-gray-500 pt-1">Example: Hero Blueprint, Blueprint, None, N/A, 1200 Bux</p>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Bulk Data Sheet Dump</label>
@@ -105,10 +113,23 @@
     </div>
 
     <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-8">
+        <!-- PUBLIC MARKETPLACE VIEW -->
         <section id="view-market" class="space-y-6">
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="md:col-span-2">
                     <input type="text" id="market-search" oninput="filterMarket()" placeholder="Search active shop inventory ledger..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
+                </div>
+                <!-- SWAPPED IN LAYOUT VIEW: Filter filters Type selector first, then Sidestat -->
+                <div>
+                    <select id="filter-slot" onchange="filterMarket()" class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
+                        <option value="">All Types</option>
+                        <option value="Weapon">Weapon</option>
+                        <option value="Head">Head</option>
+                        <option value="Body">Body</option>
+                        <option value="Leg">Leg</option>
+                        <option value="Accessory">Accessory</option>
+                        <option value="Blueprint">Blueprint</option>
+                    </select>
                 </div>
                 <div>
                     <select id="filter-sidestat" onchange="filterMarket()" class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
@@ -126,17 +147,6 @@
                         <option value="weapon">Weapon</option>
                     </select>
                 </div>
-                <div>
-                    <select id="filter-slot" onchange="filterMarket()" class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
-                        <option value="">All Types</option>
-                        <option value="Weapon">Weapon</option>
-                        <option value="Head">Head</option>
-                        <option value="Body">Body</option>
-                        <option value="Leg">Leg</option>
-                        <option value="Accessory">Accessory</option>
-                        <option value="Blueprint">Blueprint</option>
-                    </select>
-                </div>
             </div>
 
             <div class="overflow-x-auto bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
@@ -144,6 +154,7 @@
                     <thead>
                         <tr class="bg-gray-700 text-gray-300 border-b border-gray-600">
                             <th class="p-4 font-semibold text-sm">Item Name</th>
+                            <!-- FIXED: Visual columns headers swapped properly -->
                             <th class="p-4 font-semibold text-sm">Type</th>
                             <th class="p-4 font-semibold text-sm">Sidestat</th>
                             <th class="p-4 font-semibold text-sm">Offer Details (Value | Price | Seller)</th>
@@ -154,6 +165,7 @@
             </div>
         </section>
 
+        <!-- SECURE ADMIN DELETION PANEL -->
         <section id="admin-delete-panel" class="hidden border-t-2 border-dashed border-rose-900/60 pt-6 space-y-6">
             <div class="bg-rose-950/20 border border-rose-800/40 p-4 rounded-xl">
                 <h2 id="delete-panel-title" class="text-xl font-bold text-rose-400 mb-2">🛡️ My Active Listing Inventory</h2>
@@ -200,8 +212,6 @@
         const GITHUB_TOKEN = tokenPart1 + tokenPart2;
 
         const masterGearList = [
-            { name: "Laser Rifle", slot: "Weapon", sidestat: "Attack", value: "+0.5", price: "400 Bux", seller: "Pandavvv" },
-            { name: "Combat Helmet", slot: "Head", sidestat: "Attack", value: "+0.2", price: "150 Bux", seller: "Pandavvv" }
         ];
 
         let externalUserListings = []; 
@@ -326,10 +336,11 @@
                         failureCount++;
                         continue; 
                     }
+                    // FIXED IN BULK ENGINE: Swapped row index loading variables assignment order
                     batchPayloads.push({
                         itemName: dataParts[0],
-                        sidestat: dataParts[1],
-                        slot: dataParts[2],
+                        slot: dataParts[1],     // Reads Type Second
+                        sidestat: dataParts[2], // Reads Sidestat Third
                         value: dataParts[3],
                         price: dataParts[4],
                         seller: loggedInUser, 
@@ -465,7 +476,7 @@
             }
         }
 
-        // CHANGED: Adjusted row generation code to swap the Type data field column position to the left of Sidestat
+        // FIXED DISPLAY: Outputs layout nodes in Type -> Sidestat format configuration sequences
         function displayMarketListings(listings) {
             const tbody = document.getElementById('market-table-body');
             if(listings.length === 0) {
@@ -476,7 +487,9 @@
             tbody.innerHTML = listings.map(item => `
                 <tr class="hover:bg-gray-700/30 transition-colors border-b border-gray-700/50">
                     <td class="p-4 font-bold text-white align-middle w-1/4">${item.name}</td>
+                    <!-- 1. Type Slot Data Column Element -->
                     <td class="p-4 align-middle w-1/6 text-indigo-300 font-medium">${item.slot || 'N/A'}</td>
+                    <!-- 2. Sidestat Metric Data Column Element -->
                     <td class="p-4 text-gray-400 align-middle w-1/6">${item.sidestat}</td>
                     <td class="p-2 w-1/2 align-middle">
                         <div class="bg-gray-900/50 border border-gray-700 rounded-lg p-3 flex flex-wrap items-center justify-between gap-2 my-1">
