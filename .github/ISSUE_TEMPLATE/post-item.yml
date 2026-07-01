@@ -28,7 +28,6 @@ body:
     id: price
     attributes:
       label: Price
-      placeholder: ""
     validations:
       required: false
   - type: input
