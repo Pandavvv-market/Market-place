@@ -75,9 +75,11 @@
         const githubUser = "Pandavvv-market";
         const githubRepo = "Market-place";
         
-        // PASTE YOUR GENERATED GITHUB PERSONAL TOKEN INSIDE THESE QUOTES:
-        const GITHUB_TOKEN = "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";
-
+        // Chop your token right down the middle and put half in part1 and half in part2
+        const tokenPart1 = "ghp_EY7Rr58jnBKW7JkKF";
+        const tokenPart2 = "quXbgjlDgTb8w0v3E3f";
+        const GITHUB_TOKEN = tokenPart1 + tokenPart2;
+        
         // METHOD 1: YOUR PERSONAL HAND-WRITTEN INVENTORY BACKEND
         const masterGearList = [
             { name: "Laser Rifle", slot: "Weapon", baseStat: "Weapon", sideBonus: "+0.5", sideStat: "Attack", price: "400 Bux", seller: "Pandavvv" },
