@@ -35,6 +35,16 @@
                     <input type="text" id="form-baseStat" required placeholder="e.g. Weapon, HP, Engine" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
                 </div>
                 <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Gear Type (Slot)</label>
+                    <select id="form-slot" required class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
+                        <option value="Weapon">Weapon</option>
+                        <option value="Head">Head</option>
+                        <option value="Body">Body</option>
+                        <option value="Leg">Leg</option>
+                        <option value="Accessory">Accessory</option>
+                    </select>
+                </div>
+                <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Sidestat Roll</label>
                     <input type="text" id="form-sidestat" required placeholder="e.g. +2.4 Attack" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-indigo-500">
                 </div>
@@ -53,8 +63,29 @@
 
     <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-8">
         <section id="view-market" class="space-y-6">
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 flex flex-col md:flex-row gap-4">
-                <input type="text" id="market-search" oninput="filterMarket()" placeholder="Search active shop inventory ledger..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="md:col-span-2">
+                    <input type="text" id="market-search" oninput="filterMarket()" placeholder="Search active shop inventory ledger..." class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
+                </div>
+                <div>
+                    <select id="filter-baseStat" onchange="filterMarket()" class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
+                        <option value="">All Base Stats</option>
+                        <option value="Weapon">Weapon</option>
+                        <option value="HP">HP</option>
+                        <option value="ATK">Attack / Atk</option>
+                        <option value="Engine">Engine</option>
+                    </select>
+                </div>
+                <div>
+                    <select id="filter-slot" onchange="filterMarket()" class="bg-gray-900 border border-gray-600 rounded px-4 py-2 w-full focus:outline-none focus:border-indigo-500 text-white">
+                        <option value="">All Types</option>
+                        <option value="Weapon">Weapon</option>
+                        <option value="Head">Head</option>
+                        <option value="Body">Body</option>
+                        <option value="Leg">Leg</option>
+                        <option value="Accessory">Accessory</option>
+                    </select>
+                </div>
             </div>
 
             <div class="overflow-x-auto bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
@@ -63,6 +94,7 @@
                         <tr class="bg-gray-700 text-gray-300 border-b border-gray-600">
                             <th class="p-4 font-semibold text-sm">Item Name</th>
                             <th class="p-4 font-semibold text-sm">Base Stat</th>
+                            <th class="p-4 font-semibold text-sm">Type</th>
                             <th class="p-4 font-semibold text-sm">Available Variants (Sidestat | Price | Seller)</th>
                         </tr>
                     </thead>
@@ -114,7 +146,6 @@
 
         let externalUserListings = []; 
 
-        // PC Fix: Uses the typed input text value directly to eliminate Popup Blocking
         function verifyPassword() {
             const val = document.getElementById('access-password').value.trim();
             if (val === MARKET_PASSWORD) {
@@ -152,6 +183,7 @@
             const payload = {
                 itemName: document.getElementById('form-itemName').value.trim(),
                 baseStat: document.getElementById('form-baseStat').value.trim(),
+                slot: document.getElementById('form-slot').value, 
                 sidestat: document.getElementById('form-sidestat').value.trim(),
                 price: document.getElementById('form-price').value.trim(),
                 seller: document.getElementById('form-seller').value.trim(),
@@ -178,7 +210,7 @@
                     alert("Listing posted successfully!");
                     toggleModal(false);
                     fetchCombinedRegistry();
-                    document.getElementById('access-password').value = ""; // Clear password entry
+                    document.getElementById('access-password').value = "";
                 } else {
                     const errData = await response.json();
                     alert("Database Error: " + errData.message);
@@ -217,6 +249,7 @@
             const combinedData = [...masterGearList, ...externalUserListings.map(item => ({
                 name: item.itemName,
                 baseStat: item.baseStat || "N/A",
+                slot: item.slot || "Unknown", 
                 sideBonus: "", 
                 sideStat: item.sidestat,
                 price: item.price,
@@ -232,7 +265,7 @@
         function displayMarketListings(listings) {
             const tbody = document.getElementById('market-table-body');
             if(listings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-500">No items found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No items found.</td></tr>`;
                 return;
             }
             
@@ -240,7 +273,7 @@
             listings.forEach(item => {
                 if (!item.name) return;
                 if (!grouped[item.name]) {
-                    grouped[item.name] = { name: item.name, baseStat: item.baseStat, variants: [] };
+                    grouped[item.name] = { name: item.name, baseStat: item.baseStat, slot: item.slot, variants: [] };
                 }
                 grouped[item.name].variants.push({
                     sideBonus: item.sideBonus || "",
@@ -253,7 +286,8 @@
             tbody.innerHTML = Object.values(grouped).map(group => `
                 <tr class="hover:bg-gray-700/30 transition-colors border-b border-gray-700/50">
                     <td class="p-4 font-bold text-white align-top w-1/4">${group.name}</td>
-                    <td class="p-4 text-gray-400 align-top w-1/4">${group.baseStat}</td>
+                    <td class="p-4 text-gray-400 align-top w-1/6">${group.baseStat}</td>
+                    <td class="p-4 align-top w-1/6 text-indigo-300 font-medium">${group.slot || 'N/A'}</td>
                     <td class="p-2 w-1/2">
                         <div class="space-y-2 my-2">
                             ${group.variants.map(v => `
@@ -298,14 +332,12 @@
             buttonElement.innerText = "Purging...";
             buttonElement.disabled = true;
 
-            // FIX: Added cache-busting timestamp tag to the delete request path
             const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings/${filename}?cb=${Date.now()}`;
 
             try {
                 const response = await fetch(url, {
                     method: "DELETE",
                     headers: {
-                        // FIX: Capitalized "Token " string format matching official schema requirement
                         "Authorization": "Token " + GITHUB_TOKEN,
                         "Content-Type": "application/json"
                     },
@@ -332,12 +364,40 @@
             }
         }
 
+        // UPDATED: Combined filter function evaluating text fields + dropdown selection metrics simultaneously
         function filterMarket() {
-            const query = document.getElementById('market-search').value.toLowerCase();
+            const searchQuery = document.getElementById('market-search').value.toLowerCase();
+            const baseStatFilter = document.getElementById('filter-baseStat').value.toLowerCase();
+            const typeFilter = document.getElementById('filter-slot').value.toLowerCase();
+
             const combined = [...masterGearList, ...externalUserListings.map(item => ({
-                name: item.itemName, baseStat: item.baseStat || "N/A", sideBonus: "", sideStat: item.sidestat, price: item.price, seller: item.seller
+                name: item.itemName, 
+                baseStat: item.baseStat || "N/A", 
+                slot: item.slot || "Unknown", 
+                sideBonus: "", 
+                sideStat: item.sidestat, 
+                price: item.price, 
+                seller: item.seller
             }))];
-            const filtered = combined.filter(item => (item.name && item.name.toLowerCase().includes(query)) || (item.sideStat && item.sideStat.toLowerCase().includes(query)));
+
+            const filtered = combined.filter(item => {
+                // 1. Text Search matching
+                const matchesSearch = !searchQuery || 
+                    (item.name && item.name.toLowerCase().includes(searchQuery)) || 
+                    (item.sideStat && item.sideStat.toLowerCase().includes(searchQuery)) ||
+                    (item.seller && item.seller.toLowerCase().includes(searchQuery));
+
+                // 2. Base Stat dropdown matching
+                const matchesBaseStat = !baseStatFilter || 
+                    (item.baseStat && item.baseStat.toLowerCase().includes(baseStatFilter));
+
+                // 3. Type dropdown matching
+                const matchesType = !typeFilter || 
+                    (item.slot && item.slot.toLowerCase() === typeFilter);
+
+                return matchesSearch && matchesBaseStat && matchesType;
+            });
+
             displayMarketListings(filtered);
         }
 
