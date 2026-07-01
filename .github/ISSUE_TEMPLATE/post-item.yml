@@ -11,6 +11,13 @@ body:
     validations:
       required: true
   - type: input
+    id: baseStat
+    attributes:
+      label: Base Stat
+      placeholder: "e.g. Weapon, HP, Engine"
+    validations:
+      required: true
+  - type: input
     id: sidestat
     attributes:
       label: Sidestat
@@ -24,20 +31,10 @@ body:
       placeholder: "e.g. 500 Bux"
     validations:
       required: true
-  - type: dropdown
-    id: priceRange
-    attributes:
-      label: Price Range
-      options:
-        - Low
-        - Medium
-        - High
-    validations:
-      required: true
   - type: input
-    id: seller
+    id: ign
     attributes:
-      label: Discord Handle
-      placeholder: "username#0000"
+      label: In-Game Username
+      placeholder: "Your PSS captain name"
     validations:
       required: true
