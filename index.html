@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PSS Active Market</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- LINKED PLAYER REGISTRY FILE -->
+    <script src="players.js?cb=20260703"></script>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
 
@@ -87,15 +90,22 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">In-Game Captain Name</label>
-                        <input type="text" id="form-seller" disabled class="w-full bg-gray-800 border border-gray-700 text-gray-400 rounded p-2 focus:outline-none cursor-not-allowed font-mono">
+                        <!-- CHANGED: Input now adapts style classes dynamically depending on key status code definitions -->
+                        <input type="text" id="form-seller" placeholder="Type your captain name..." class="w-full rounded p-2 font-mono focus:outline-none">
                     </div>
                 </div>
 
                 <!-- BULK PASTING INTERFACE CONTAINER -->
                 <div id="bulk-fields" class="space-y-4 hidden">
-                    <div class="bg-gray-900/60 p-3 rounded border border-gray-700 text-xs text-gray-400 space-y-1">
-                        <p class="font-bold text-indigo-400">📋 Format Rules for Bulk Pasting:</p>
-                        <p>Separate values with commas or tabs. One item per line. Do not type your username:</p>
+                    <div id="bulk-rules-guest" class="bg-gray-900/60 p-3 rounded border border-gray-700 text-xs text-gray-400 space-y-1 hidden">
+                        <p class="font-bold text-indigo-400">📋 Universal Guest Bulk Pasting Rules:</p>
+                        <p>Because you are using the universal key, you must include your name as the **last item** on every line:</p>
+                        <p class="font-mono text-emerald-400 bg-black/40 p-1.5 rounded mt-1">Item Name, Type, Sidestat, Value, Price, Captain Name</p>
+                        <p class="text-[10px] text-gray-500 pt-1">Example: Hero Blueprint, Blueprint, None, N/A, 1200 Bux, Trevor</p>
+                    </div>
+                    <div id="bulk-rules-member" class="bg-gray-900/60 p-3 rounded border border-gray-700 text-xs text-gray-400 space-y-1 hidden">
+                        <p class="font-bold text-indigo-400">📋 Member Bulk Pasting Rules:</p>
+                        <p>Do not type your username; the system drops it in automatically:</p>
                         <p class="font-mono text-emerald-400 bg-black/40 p-1.5 rounded mt-1">Item Name, Type, Sidestat, Value, Price</p>
                         <p class="text-[10px] text-gray-500 pt-1">Example: Hero Blueprint, Blueprint, None, N/A, 1200 Bux</p>
                     </div>
@@ -191,17 +201,9 @@
     <script>
         const ADMIN_KEY = "0302"; 
         
-        // Key Registry Database Mapping
-        const playerKeys = {
-            "0302": "Pandavvv",
-            "6492": "OdeToLlama", 
-            "9999": "BetaTester"
-        };
-
         const githubUser = "Pandavvv-market";
         const githubRepo = "Market-place";
         
-        // Split GitHub Authorization Key Modules
         const tokenPart1 = "ghp_EY7Rr58jnBKW7JkKF";
         const tokenPart2 = "quXbgjlDgTb8w0v3E3f";
         const GITHUB_TOKEN = tokenPart1 + tokenPart2;
@@ -212,11 +214,18 @@
         let externalUserListings = []; 
         let currentFormMode = 'single';
         let loggedInUser = ""; 
+        let isUniversalGuest = false; // Tracks if using the universal key code
 
         function verifyPassword() {
+            if (typeof playerKeys === 'undefined') {
+                alert("Database Sync Error: The player list file is still updating on GitHub. Please wait a minute and try again.");
+                return false;
+            }
+
             const val = document.getElementById('access-password').value.trim();
             if (playerKeys[val]) {
                 loggedInUser = playerKeys[val];
+                isUniversalGuest = (loggedInUser === "Guest");
                 return true;
             }
             alert("Unauthorized Key Module! Access denied.");
@@ -225,8 +234,23 @@
 
         function handlePostAction() {
             if (verifyPassword()) {
-                document.getElementById('active-user-badge').innerText = `Posting as: ${loggedInUser}`;
-                document.getElementById('form-seller').value = loggedInUser; 
+                const nameBox = document.getElementById('form-seller');
+                
+                if (isUniversalGuest) {
+                    document.getElementById('active-user-badge').innerText = `Posting as: Guest Captain`;
+                    nameBox.value = "";
+                    nameBox.disabled = false;
+                    nameBox.className = "w-full bg-gray-900 border border-gray-600 text-white rounded p-2 font-mono focus:outline-none focus:border-indigo-500";
+                    document.getElementById('bulk-rules-guest').classList.remove('hidden');
+                    document.getElementById('bulk-rules-member').classList.add('hidden');
+                } else {
+                    document.getElementById('active-user-badge').innerText = `Posting as: ${loggedInUser}`;
+                    nameBox.value = loggedInUser; 
+                    nameBox.disabled = true;
+                    nameBox.className = "w-full bg-gray-800 border border-gray-700 text-gray-400 rounded p-2 focus:outline-none cursor-not-allowed font-mono";
+                    document.getElementById('bulk-rules-member').classList.remove('hidden');
+                    document.getElementById('bulk-rules-guest').classList.add('hidden');
+                }
                 toggleModal(true);
             }
         }
@@ -240,6 +264,16 @@
                 if (key === ADMIN_KEY) {
                     title.innerText = "🛡️ Live Listing Deletion Board (Master Admin Mode)";
                     desc.innerText = "Full structural access active. You can review and delete any listing entry.";
+                } else if (isUniversalGuest) {
+                    // Prompt universal guests to enter their username so they can view their items
+                    const lookupName = prompt("Please enter your In-Game Captain Name to find your inventory:");
+                    if(!lookupName || lookupName.trim() === "") {
+                        alert("Name input required to open deletion deck.");
+                        return;
+                    }
+                    loggedInUser = lookupName.trim();
+                    title.innerText = `🛡️ Active Listing Inventory for Captain: ${loggedInUser}`;
+                    desc.innerText = "Showing items that match the typed name code blueprint parameters.";
                 } else {
                     title.innerText = `🛡️ Active Listing Inventory for Captain: ${loggedInUser}`;
                     desc.innerText = "You can permanently delete your own listing files, but cannot touch other players'.";
@@ -292,6 +326,14 @@
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
 
+            // Final safety verification check for typed name box tracking
+            let contextualSellerName = isUniversalGuest ? document.getElementById('form-seller').value.trim() : loggedInUser;
+            if (currentFormMode === 'single' && (!contextualSellerName || contextualSellerName === "")) {
+                alert("Please enter a valid Captain Name before publishing.");
+                btn.disabled = false;
+                return;
+            }
+
             if (currentFormMode === 'single') {
                 btn.innerText = "Uploading to Database...";
                 const payload = {
@@ -300,7 +342,7 @@
                     slot: document.getElementById('form-slot').value, 
                     value: document.getElementById('form-value').value.trim(),
                     price: document.getElementById('form-price').value.trim(),
-                    seller: loggedInUser, 
+                    seller: contextualSellerName, 
                     datePosted: "2026-07-01"
                 };
                 const success = await uploadSingleListing(payload);
@@ -327,19 +369,37 @@
 
                 for (let i = 0; i < lines.length; i++) {
                     const dataParts = lines[i].split(/,|\t/).map(p => p.trim());
-                    if (dataParts.length < 5) { 
-                        failureCount++;
-                        continue; 
+                    
+                    // CHANGED: Dynamic bulk loops adjust parsing calculations based on player key tier mappings
+                    if (isUniversalGuest) {
+                        if (dataParts.length < 6) { // Expects 6 items for guest mode (including name)
+                            failureCount++;
+                            continue;
+                        }
+                        batchPayloads.push({
+                            itemName: dataParts[0],
+                            slot: dataParts[1],     
+                            sidestat: dataParts[2], 
+                            value: dataParts[3],
+                            price: dataParts[4],
+                            seller: dataParts[5], // Pulls name directly from text row line context slot
+                            datePosted: "2026-07-01"
+                        });
+                    } else {
+                        if (dataParts.length < 5) { 
+                            failureCount++;
+                            continue; 
+                        }
+                        batchPayloads.push({
+                            itemName: dataParts[0],
+                            slot: dataParts[1],     
+                            sidestat: dataParts[2], 
+                            value: dataParts[3],
+                            price: dataParts[4],
+                            seller: loggedInUser, 
+                            datePosted: "2026-07-01"
+                        });
                     }
-                    batchPayloads.push({
-                        itemName: dataParts[0],
-                        slot: dataParts[1],     
-                        sidestat: dataParts[2], 
-                        value: dataParts[3],
-                        price: dataParts[4],
-                        seller: loggedInUser, 
-                        datePosted: "2026-07-01"
-                    });
                 }
 
                 if (batchPayloads.length === 0) {
@@ -351,7 +411,9 @@
 
                 btn.innerText = "Uploading unified bundle to GitHub...";
                 const timestampUnique = Date.now();
-                const fileName = `bulk-${loggedInUser.replace(/[^a-zA-Z0-9]/g, '')}-${timestampUnique}.json`;
+                // Safe lookup prefix configuration matching identity context
+                const safeNameStr = isUniversalGuest ? "guest" : loggedInUser.replace(/[^a-zA-Z0-9]/g, '');
+                const fileName = `bulk-${safeNameStr}-${timestampUnique}.json`;
                 const url = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/listings/${fileName}`;
 
                 try {
@@ -499,15 +561,18 @@
 
         function renderDeleteTable(listings) {
             const tbody = document.getElementById('delete-table-body');
+            
+            if (typeof playerKeys === 'undefined') return;
             const key = document.getElementById('access-password').value.trim();
 
             let targetedListings = listings;
+            // Admin sees all, standard users/guests filter by their loggedInUser variable tracking context string
             if (key !== ADMIN_KEY) {
-                targetedListings = listings.filter(item => item.seller === loggedInUser);
+                targetedListings = listings.filter(item => item.seller && item.seller.toLowerCase() === loggedInUser.toLowerCase());
             }
 
             if (targetedListings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No external records found for your profile identity.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No external records found matching the profile parameters.</td></tr>`;
                 return;
             }
 
@@ -627,11 +692,13 @@
 
         function filterDeleteList() {
             const query = document.getElementById('delete-search').value.toLowerCase();
+            
+            if (typeof playerKeys === 'undefined') return;
             const key = document.getElementById('access-password').value.trim();
 
             let targetList = externalUserListings;
             if (key !== ADMIN_KEY) {
-                targetList = externalUserListings.filter(item => item.seller === loggedInUser);
+                targetList = externalUserListings.filter(item => item.seller && item.seller.toLowerCase() === loggedInUser.toLowerCase());
             }
 
             const filtered = targetList.filter(item => 
