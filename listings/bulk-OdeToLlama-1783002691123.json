@@ -1,0 +1,23 @@
+{
+  "isBatch": true,
+  "items": [
+    {
+      "itemName": "Dark Matter Armour",
+      "slot": "Body",
+      "sidestat": "HP",
+      "value": "N/A",
+      "price": "900 Bux",
+      "seller": "OdeToLlama",
+      "datePosted": "2026-07-01"
+    },
+    {
+      "itemName": "Dark Matter Armour",
+      "slot": "Body",
+      "sidestat": "PLT",
+      "value": "N/A",
+      "price": "750 Bux",
+      "seller": "OdeToLlama",
+      "datePosted": "2026-07-01"
+    }
+  ]
+}
